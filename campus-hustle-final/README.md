@@ -130,19 +130,6 @@ Open:
 - Frontend: `http://localhost:3000`
 - Backend health check: `http://localhost:5000/health`
 
-## Demo Accounts
-
-Seeded accounts are created by `schema.sql`.
-
-| Role | Email | Password |
-| --- | --- | --- |
-| Admin | emmanuel.kiprotich@strathmore.edu | Password123! |
-| Student | amina.wanjiku@strathmore.edu | DemoPass123! |
-| Student | brian.otieno@strathmore.edu | DemoPass123! |
-| Student | cynthia.mutua@strathmore.edu | DemoPass123! |
-| Student | david.mwangi@strathmore.edu | DemoPass123! |
-
-The app sends a 2FA code by email during login, so SMTP credentials must be valid for the complete auth flow.
 
 ## Build and Verification
 
