@@ -140,6 +140,12 @@ INSERT INTO messages (sender_id, receiver_id, listing_id, content, created_at) V
   (2, 5, 10, 'Please reserve one chicken wrap for lunch.', NOW() - INTERVAL '1 hour'),
   (4, 2, 3, 'Can you make a poster by tomorrow morning?', NOW() - INTERVAL '45 minutes');
 
+
+-- 1. Update any existing data so the constraint doesn't fail
+UPDATE listings 
+SET campus_zone = 'Phase 2' 
+WHERE campus_zone = 'Phase 3';
+
 -- Fast seller Hustle Metrics query used by the dashboard.
 -- Replace :seller_id with a parameter in application code.
 -- SELECT
