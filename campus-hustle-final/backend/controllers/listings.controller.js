@@ -1,0 +1,151 @@
+// backend/controllers/listings.controller.js
+'use strict';
+
+const db = require('../config/db');
+const { AppError, asyncHandler } = require('../utils/errors');
+const { requireFields } = require('../utils/validate');
+
+// ─── Public: search/filter listings ─────────────────────────────────────────
+
+const search = asyncHandler(async (req, res) => {
+  const { category_id, keyword, campus_zone } = req.query;
+
+  let sql = `
+    SELECT l.id, l.title, l.description, l.price, l.campus_zone, l.view_count, l.created_at,
+           c.name AS category_name,
+           u.name AS seller_name,
+           u.profile_picture_url AS seller_profile_picture_url
+    FROM listings l
+    JOIN categories c ON l.category_id = c.id
+    JOIN users u      ON l.seller_id   = u.id
+    WHERE 1=1
+  `;
+  const params = [];
+
+  if (category_id) {
+    params.push(parseInt(category_id, 10));
+    sql += ` AND l.category_id = $${params.length}`;
+  }
+
+  if (keyword) {
+    params.push(`%${keyword}%`);
+    // Reuse the same param index for both columns
+    sql += ` AND (l.title ILIKE $${params.length} OR l.description ILIKE $${params.length})`;
+  }
+
+  if (campus_zone) {
+    params.push(campus_zone);
+    sql += ` AND l.campus_zone = $${params.length}`;
+  }
+
+  sql += ' ORDER BY l.created_at DESC';
+
+  const result = await db.query(sql, params);
+  res.status(200).json({ success: true, listings: result.rows });
+});
+
+// ─── Public: single listing detail ──────────────────────────────────────────
+
+const getById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const result = await db.transaction(async (client) => {
+    await client.query('UPDATE listings SET view_count = view_count + 1 WHERE id = $1', [id]);
+    return client.query(
+    `SELECT l.*, c.name AS category_name, u.name AS seller_name, u.email AS seller_email, u.profile_picture_url AS seller_profile_picture_url
+     FROM listings l
+     LEFT JOIN categories c ON l.category_id = c.id
+     JOIN users u ON l.seller_id = u.id
+     WHERE l.id = $1`,
+      [id]
+    );
+  });
+
+  if (result.rows.length === 0) {
+    throw new AppError('Listing not found.', 404);
+  }
+
+  res.status(200).json({ success: true, listing: result.rows[0] });
+});
+
+// ─── Protected: seller dashboard metrics ────────────────────────────────────
+
+const getDashboardMetrics = asyncHandler(async (req, res) => {
+  const sellerId = req.user.id;
+
+  const [listingsRes, metricsRes, ordersRes] = await Promise.all([
+    db.query(
+      `SELECT l.*, c.name AS category_name
+       FROM listings l
+       LEFT JOIN categories c ON l.category_id = c.id
+       WHERE l.seller_id = $1
+       ORDER BY l.created_at DESC`,
+      [sellerId]
+    ),
+    db.query(
+      `SELECT
+         (SELECT COUNT(*)::int
+          FROM bookings b
+          JOIN listings l ON b.listing_id = l.id
+          WHERE l.seller_id = $1) AS total_requests,
+         (SELECT COALESCE(SUM(l.price), 0)
+          FROM bookings b
+          JOIN listings l ON b.listing_id = l.id
+          WHERE l.seller_id = $1 AND b.status = 'completed') AS total_earnings,
+         (SELECT COALESCE(SUM(view_count), 0)::int
+          FROM listings
+          WHERE seller_id = $1) AS total_views,
+         (SELECT COUNT(*)::int
+          FROM messages m
+          JOIN listings l ON m.listing_id = l.id
+          WHERE l.seller_id = $1 AND m.receiver_id = l.seller_id) AS total_offers`,
+      [sellerId]
+    ),
+    db.query(
+      `SELECT b.id, b.status, b.scheduled_date, l.title, u.name AS buyer_name
+       FROM bookings b
+       JOIN listings l ON b.listing_id = l.id
+       JOIN users    u ON b.buyer_id   = u.id
+       WHERE l.seller_id = $1 AND b.status = 'pending'
+       ORDER BY b.scheduled_date ASC`,
+      [sellerId]
+    ),
+  ]);
+
+  const { total_requests, total_earnings } = metricsRes.rows[0];
+
+  res.status(200).json({
+    success: true,
+    listings: listingsRes.rows,
+    summary: {
+      totalRequests: total_requests,
+      totalEarnings: parseFloat(total_earnings),
+      totalViews: total_views,
+      totalOffers: total_offers,
+    },
+    activeOrders: ordersRes.rows,
+  });
+});
+
+// ─── Protected: create listing ───────────────────────────────────────────────
+
+const create = asyncHandler(async (req, res) => {
+  const { title, description, price, category_id, campus_zone } = req.body;
+
+  const missing = requireFields(req.body, ['title', 'description', 'price', 'category_id', 'campus_zone']);
+  if (missing) throw new AppError(missing, 400);
+
+  const parsedPrice = parseFloat(price);
+  if (isNaN(parsedPrice) || parsedPrice < 0) {
+    throw new AppError('Price must be a non-negative number.', 400);
+  }
+
+  const result = await db.query(
+    `INSERT INTO listings (seller_id, category_id, title, description, price, campus_zone)
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+    [req.user.id, parseInt(category_id, 10), title.trim(), description.trim(), parsedPrice, campus_zone]
+  );
+
+  res.status(201).json({ success: true, listing: result.rows[0] });
+});
+
+module.exports = { search, getById, getDashboardMetrics, create };

@@ -1,0 +1,10 @@
+node_modules/
+build/
+dist/
+.env
+.env.*
+!.env.example
+backend/public/uploads/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
