@@ -16,13 +16,15 @@ const CAMPUS_ZONES = [
   '',
   'Student Centre (STC)',
   'Phase 2',
-  'Phase I',
   'The Library Gates',
   'The Cafeteria/Gazebos',
 ];
 
 const ListingCard = ({ listing, onClick }) => (
   <button className="listing-card reveal" onClick={onClick}>
+    {listing.photo_url && (
+      <img src={listing.photo_url} alt="" className="listing-photo" loading="lazy" />
+    )}
     <div className="card-category">{listing.category_name}</div>
     <h3>{listing.title}</h3>
     <p className="card-desc">
@@ -34,6 +36,9 @@ const ListingCard = ({ listing, onClick }) => (
       <span className="card-price">KES {parseFloat(listing.price).toLocaleString()}</span>
       <span className="card-seller">by {listing.seller_name}</span>
     </div>
+    {(listing.contact_phone || listing.seller_phone_number) && (
+      <div className="listing-contact">Call: {listing.contact_phone || listing.seller_phone_number}</div>
+    )}
     {listing.campus_zone && <div className="campus-zone-tag">{listing.campus_zone}</div>}
   </button>
 );
@@ -44,6 +49,7 @@ const MarketplaceHome = () => {
   const [keyword,    setKeyword]    = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [campusZone, setCampusZone] = useState('');
+  const [topHustlers, setTopHustlers] = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState('');
 
@@ -60,7 +66,12 @@ const MarketplaceHome = () => {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchListings('', '', ''); }, [fetchListings]);
+  useEffect(() => {
+    fetchListings('', '', '');
+    listingsApi.topHustlers()
+      .then((res) => setTopHustlers(res.data.hustlers || []))
+      .catch(() => setTopHustlers([]));
+  }, [fetchListings]);
 
   const handleSearch = (e) => { e.preventDefault(); fetchListings(keyword, categoryId, campusZone); };
   const handleCategory = (id) => { setCategoryId(id); fetchListings(keyword, id, campusZone); };
@@ -123,6 +134,30 @@ const MarketplaceHome = () => {
         </div>
 
         <Alert type="error" message={error} />
+
+        {topHustlers.length > 0 && (
+          <section className="top-hustlers reveal" aria-label="Top hustlers by rating">
+            <div>
+              <h2>Top Hustlers</h2>
+              <p>Ranked by average rating from completed service reviews.</p>
+            </div>
+            <div className="top-hustlers-list">
+              {topHustlers.map((hustler, index) => (
+                <div key={hustler.id} className="top-hustler">
+                  {hustler.profile_picture_url ? (
+                    <img src={hustler.profile_picture_url} alt="" />
+                  ) : (
+                    <span>{hustler.name.split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase()}</span>
+                  )}
+                  <div>
+                    <strong>#{index + 1} {hustler.name}</strong>
+                    <small>{Number(hustler.average_rating).toFixed(2)} stars · {hustler.review_count} review{hustler.review_count !== 1 ? 's' : ''}</small>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {loading ? (
           <Spinner label="Loading listings…" />

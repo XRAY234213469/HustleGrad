@@ -6,7 +6,7 @@ export const authApi = {
   login:          (data)         => client.post('/auth/login', data),
   verify2FA:      (userId, code) => client.post('/auth/verify-2fa', { userId, tfaCode: code }),
   me:             ()             => client.get('/auth/me'),
-  forgotPassword: (email)        => client.post('/auth/forgot-password', { email }),
+  forgotPassword: (admissionNumber) => client.post('/auth/forgot-password', { admissionNumber }),
   resetPassword:  (data)         => client.post('/auth/reset-password', data),
 };
 
@@ -17,6 +17,7 @@ export const profilesApi = {
 
 export const listingsApi = {
   search:       (params) => client.get('/listings', { params }),
+  topHustlers:  ()       => client.get('/listings/top/hustlers'),
   getById:      (id)     => client.get(`/listings/${id}`),
   create:       (data)   => client.post('/listings', data),
   getDashboard: ()       => client.get('/listings/my/dashboard'),

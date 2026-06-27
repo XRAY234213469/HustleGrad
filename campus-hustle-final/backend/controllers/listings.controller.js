@@ -11,9 +11,10 @@ const search = asyncHandler(async (req, res) => {
   const { category_id, keyword, campus_zone } = req.query;
 
   let sql = `
-    SELECT l.id, l.title, l.description, l.price, l.campus_zone, l.view_count, l.created_at,
+    SELECT l.id, l.title, l.description, l.price, l.photo_url, l.contact_phone, l.campus_zone, l.view_count, l.created_at,
            c.name AS category_name,
            u.name AS seller_name,
+           u.phone_number AS seller_phone_number,
            u.profile_picture_url AS seller_profile_picture_url
     FROM listings l
     JOIN categories c ON l.category_id = c.id
@@ -51,7 +52,8 @@ const getById = asyncHandler(async (req, res) => {
   const result = await db.transaction(async (client) => {
     await client.query('UPDATE listings SET view_count = view_count + 1 WHERE id = $1', [id]);
     return client.query(
-    `SELECT l.*, c.name AS category_name, u.name AS seller_name, u.email AS seller_email, u.profile_picture_url AS seller_profile_picture_url
+    `SELECT l.*, c.name AS category_name, u.name AS seller_name, u.email AS seller_email,
+            u.phone_number AS seller_phone_number, u.profile_picture_url AS seller_profile_picture_url
      FROM listings l
      LEFT JOIN categories c ON l.category_id = c.id
      JOIN users u ON l.seller_id = u.id
@@ -111,7 +113,7 @@ const getDashboardMetrics = asyncHandler(async (req, res) => {
     ),
   ]);
 
-  const { total_requests, total_earnings } = metricsRes.rows[0];
+  const { total_requests, total_earnings, total_views, total_offers } = metricsRes.rows[0];
 
   res.status(200).json({
     success: true,
@@ -129,7 +131,7 @@ const getDashboardMetrics = asyncHandler(async (req, res) => {
 // ─── Protected: create listing ───────────────────────────────────────────────
 
 const create = asyncHandler(async (req, res) => {
-  const { title, description, price, category_id, campus_zone } = req.body;
+  const { title, description, price, category_id, campus_zone, photo_url, contact_phone } = req.body;
 
   const missing = requireFields(req.body, ['title', 'description', 'price', 'category_id', 'campus_zone']);
   if (missing) throw new AppError(missing, 400);
@@ -140,12 +142,42 @@ const create = asyncHandler(async (req, res) => {
   }
 
   const result = await db.query(
-    `INSERT INTO listings (seller_id, category_id, title, description, price, campus_zone)
-     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-    [req.user.id, parseInt(category_id, 10), title.trim(), description.trim(), parsedPrice, campus_zone]
+    `INSERT INTO listings (seller_id, category_id, title, description, price, photo_url, contact_phone, campus_zone)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+    [
+      req.user.id,
+      parseInt(category_id, 10),
+      title.trim(),
+      description.trim(),
+      parsedPrice,
+      photo_url?.trim() || null,
+      contact_phone?.trim() || null,
+      campus_zone,
+    ]
   );
 
   res.status(201).json({ success: true, listing: result.rows[0] });
 });
 
-module.exports = { search, getById, getDashboardMetrics, create };
+const topHustlers = asyncHandler(async (_req, res) => {
+  const result = await db.query(
+    `SELECT
+       u.id,
+       u.name,
+       u.profile_picture_url,
+       COUNT(r.id)::int AS review_count,
+       ROUND(AVG(r.rating)::numeric, 2) AS average_rating
+     FROM users u
+     JOIN listings l ON l.seller_id = u.id
+     JOIN bookings b ON b.listing_id = l.id
+     JOIN reviews r ON r.booking_id = b.id
+     GROUP BY u.id, u.name, u.profile_picture_url
+     HAVING COUNT(r.id) > 0
+     ORDER BY average_rating DESC, review_count DESC, u.name ASC
+     LIMIT 5`
+  );
+
+  res.status(200).json({ success: true, hustlers: result.rows });
+});
+
+module.exports = { search, getById, getDashboardMetrics, create, topHustlers };

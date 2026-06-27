@@ -13,7 +13,7 @@ const updateProfilePicture = asyncHandler(async (req, res) => {
     `UPDATE users
      SET profile_picture_url = $1
      WHERE id = $2
-     RETURNING id, name, email, is_admin, profile_picture_url`,
+     RETURNING id, name, admission_number, email, phone_number, is_admin, profile_picture_url`,
     [publicUrl, req.user.id]
   );
 

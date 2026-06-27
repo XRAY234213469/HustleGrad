@@ -36,7 +36,7 @@ const getStats = asyncHandler(async (req, res) => {
 
 const getUsers = asyncHandler(async (_req, res) => {
   const result = await db.query(
-    'SELECT id, name, email, is_admin, created_at FROM users ORDER BY created_at DESC'
+    'SELECT id, name, admission_number, email, phone_number, is_admin, created_at FROM users ORDER BY created_at DESC'
   );
   res.status(200).json({ success: true, users: result.rows });
 });

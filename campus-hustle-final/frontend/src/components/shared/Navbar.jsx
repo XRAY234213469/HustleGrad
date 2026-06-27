@@ -21,7 +21,7 @@ const Navbar = () => {
       <div style={s.inner}>
         {/* Logo */}
         <Link to="/" style={s.logo}>
-          <span style={s.logoIcon}>🎓</span>
+          <img src="/logo.svg" alt="" style={s.logoIcon} />
           <span style={s.logoText}>HustleGrad</span>
         </Link>
 
@@ -86,7 +86,7 @@ const Navbar = () => {
 const s = {
   inner:       { maxWidth: 1100, margin: '0 auto', padding: '0 20px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   logo:        { display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' },
-  logoIcon:    { fontSize: '1.4rem' },
+  logoIcon:    { width: 30, height: 30, borderRadius: 8 },
   logoText:    { fontWeight: 800, fontSize: '1.05rem', color: '#0288d1', letterSpacing: '-0.02em' },
   links:       { display: 'flex', gap: 4 },
   link:        { padding: '6px 14px', borderRadius: 6, color: '#334155', fontWeight: 500, fontSize: '0.9rem', textDecoration: 'none', transition: 'background 0.15s', ':hover': { background: '#f1f5f9' } },

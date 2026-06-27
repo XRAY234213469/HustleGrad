@@ -4,14 +4,13 @@ HustleGrad is a campus student marketplace web application for buying, selling, 
 
 ## Features
 
-- Student registration and login with email-based 2FA
+- Student registration with unique admission numbers and flexible personal or Strathmore email OTP login
 - Persistent sessions with server-side token revalidation
 - Protected student, admin, messaging, and seller dashboard routes
 - Marketplace search and category filtering
 - Campus Zone tagging for listings:
   - Student Centre (STC)
   - Phase 2
-  - Phase I
   - The Library Gates
   - The Cafeteria/Gazebos
 - Profile picture upload with public image URL persistence
@@ -28,7 +27,7 @@ HustleGrad is a campus student marketplace web application for buying, selling, 
 | Frontend | React 18, React Router, Axios, CSS |
 | Backend | Node.js, Express |
 | Database | PostgreSQL |
-| Auth | JWT, bcrypt, email 2FA |
+| Auth | JWT, bcrypt, admission-number login, email OTP |
 | Email | Nodemailer |
 | Security | Helmet, CORS, rate limiting |
 

@@ -94,6 +94,8 @@ input[type="password"],
 input[type="number"],
 input[type="date"],
 input[type="file"],
+input[type="tel"],
+input[type="url"],
 select,
 textarea {
   width: 100%;
@@ -149,6 +151,13 @@ input::placeholder, textarea::placeholder { color: var(--text-faint); }
 }
 
 .nav-logo span { color: var(--primary); }
+
+.nav-logo-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  flex: 0 0 auto;
+}
 
 .nav-links {
   display: flex;
@@ -415,6 +424,14 @@ td { padding: 13px 14px; color: var(--text-base); vertical-align: middle; }
   text-align: left;
   font: inherit;
 }
+
+.listing-photo {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: #f1f5f9;
+}
 .listing-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
@@ -444,6 +461,12 @@ td { padding: 13px 14px; color: var(--text-base); vertical-align: middle; }
 }
 .listing-card .card-price { font-size: 1.05rem; font-weight: 800; color: var(--primary); }
 .listing-card .card-seller { font-size: 0.78rem; color: var(--text-faint); }
+
+.listing-contact {
+  font-size: 0.78rem;
+  color: var(--text-base);
+  font-weight: 700;
+}
 
 .campus-zone-tag {
   display: inline-flex;
@@ -486,6 +509,131 @@ td { padding: 13px 14px; color: var(--text-base); vertical-align: middle; }
   color: #fff;
   background: var(--primary);
   font-weight: 800;
+}
+
+.top-hustlers {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) 1fr;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: var(--shadow-xs);
+}
+
+.top-hustlers h2 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+
+.top-hustlers p {
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.top-hustlers-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.top-hustler {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+
+.top-hustler img,
+.top-hustler > span {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.top-hustler img {
+  object-fit: cover;
+}
+
+.top-hustler > span {
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.82rem;
+}
+
+.top-hustler strong,
+.top-hustler small {
+  display: block;
+}
+
+.top-hustler strong {
+  color: var(--text-dark);
+  font-size: 0.86rem;
+}
+
+.top-hustler small {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.contact-page {
+  min-height: calc(100vh - var(--nav-height));
+  display: grid;
+  place-items: center;
+  padding: 48px 16px;
+}
+
+.contact-panel {
+  width: 100%;
+  max-width: 560px;
+  padding: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+
+.contact-logo {
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 18px;
+  border-radius: 22px;
+}
+
+.contact-panel h1 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.contact-panel p {
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.contact-email {
+  display: inline-flex;
+  margin-top: 18px;
+  font-weight: 800;
+  word-break: break-word;
+}
+
+.contact-back {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: 0.86rem;
+  font-weight: 700;
 }
 
 .sr-only {
@@ -880,6 +1028,7 @@ td { padding: 13px 14px; color: var(--text-base); vertical-align: middle; }
   .tab-btn { padding: 10px 14px; font-size: 0.8rem; }
   .listings-grid { grid-template-columns: 1fr; }
   .marketplace-filter-row { grid-template-columns: 1fr; }
+  .top-hustlers { grid-template-columns: 1fr; }
 }
 
 /* ── 26. Utility classes ────────────────────────────────────────────────────── */

@@ -13,6 +13,7 @@ import ServiceDetails     from './components/marketplace/ServiceDetails';
 import StudentDashboard   from './components/dashboard/StudentDashboard';
 import AdminDashboard     from './components/admin/AdminDashboard';
 import MessagingInterface from './components/messaging/MessagingInterface';
+import ContactUs          from './components/shared/ContactUs';
 
 const App = () => (
   <AuthProvider>
@@ -22,6 +23,7 @@ const App = () => (
         <Route path="/register"        element={<Register />} />
         <Route path="/login"           element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/contact"         element={<ContactUs />} />
         <Route path="/marketplace"     element={<MarketplaceHome />} />
         <Route path="/listing/:id"     element={<ServiceDetails />} />
 

@@ -6,7 +6,7 @@ import { Alert, Button } from '../shared';
 
 const Register = () => {
   const navigate = useNavigate();
-  const [form, setForm]     = useState({ name: '', email: '', password: '' });
+  const [form, setForm]     = useState({ name: '', admissionNumber: '', email: '', phoneNumber: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
   const [success, setSuccess] = useState('');
@@ -34,7 +34,7 @@ const Register = () => {
         <div className="auth-logo">
           <span className="emoji">🎓</span>
           <h2>Create Account</h2>
-          <p>Join the Strathmore campus marketplace</p>
+          <p>Join with your admission number and preferred email</p>
         </div>
 
         <Alert type="error"   message={error} />
@@ -42,16 +42,18 @@ const Register = () => {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {[
-            { label: 'Full Name',     name: 'name',     type: 'text',     placeholder: 'Your full name' },
-            { label: 'Student Email', name: 'email',    type: 'email',    placeholder: 'you@strathmore.edu' },
-            { label: 'Password',      name: 'password', type: 'password', placeholder: '••••••••' },
-          ].map(({ label, name, type, placeholder }) => (
+            { label: 'Full Name', name: 'name', type: 'text', placeholder: 'Your full name', required: true },
+            { label: 'Admission Number', name: 'admissionNumber', type: 'text', placeholder: 'ADM001', required: true },
+            { label: 'Email for OTP', name: 'email', type: 'email', placeholder: 'personal@email.com or you@strathmore.edu', required: true },
+            { label: 'Contact Number', name: 'phoneNumber', type: 'tel', placeholder: '0712 345 678', required: false },
+            { label: 'Password', name: 'password', type: 'password', placeholder: 'Password', required: true },
+          ].map(({ label, name, type, placeholder, required }) => (
             <div key={name}>
               <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                 {label}
               </label>
               <input name={name} type={type} value={form[name]} onChange={handleChange}
-                placeholder={placeholder} required />
+                placeholder={placeholder} required={required} />
             </div>
           ))}
 

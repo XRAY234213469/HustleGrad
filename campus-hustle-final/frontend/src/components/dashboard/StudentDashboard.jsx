@@ -12,7 +12,7 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm]       = useState({ title:'', description:'', price:'', category_id:'', campus_zone:'' });
+  const [form, setForm]       = useState({ title:'', description:'', price:'', category_id:'', campus_zone:'', photo_url:'', contact_phone:'' });
   const [formBusy, setFormBusy] = useState(false);
   const [formMsg, setFormMsg]  = useState('');
   const [formErr, setFormErr]  = useState('');
@@ -23,7 +23,6 @@ const StudentDashboard = () => {
   const campusZones = [
     'Student Centre (STC)',
     'Phase 2',
-    'Phase I',
     'The Library Gates',
     'The Cafeteria/Gazebos',
   ];
@@ -44,7 +43,7 @@ const StudentDashboard = () => {
     try {
       await listingsApi.create(form);
       setFormMsg('Listing published!');
-      setForm({ title:'', description:'', price:'', category_id:'', campus_zone:'' });
+      setForm({ title:'', description:'', price:'', category_id:'', campus_zone:'', photo_url:'', contact_phone:'' });
       load();
       setTimeout(() => setShowForm(false), 1500);
     } catch (err) { setFormErr(err.message); }
@@ -94,6 +93,9 @@ const StudentDashboard = () => {
             <div>
               <h2 style={{ margin:0, fontSize:'1.5rem' }}>Welcome back, {user?.name?.split(' ')[0]}</h2>
               <p style={{ margin:'4px 0 0', color:'var(--text-muted)', fontSize:'0.85rem' }}>{user?.email}</p>
+              {user?.admission_number && (
+                <p style={{ margin:'2px 0 0', color:'var(--text-muted)', fontSize:'0.8rem' }}>Admission: {user.admission_number}</p>
+              )}
               <div style={{ marginTop:8 }}>
                 <label className="btn btn-neutral btn-sm" style={{ cursor: uploadBusy ? 'not-allowed' : 'pointer' }}>
                   {uploadBusy ? 'Uploading...' : 'Upload photo'}
@@ -176,6 +178,14 @@ const StudentDashboard = () => {
                       {campusZones.map(zone => <option key={zone} value={zone}>{zone}</option>)}
                     </select>
                   </div>
+                  <div>
+                    <label style={{ display:'block', marginBottom:6, fontWeight:600, fontSize:'0.82rem', color:'var(--text-muted)' }}>Listing Photo URL</label>
+                    <input type="url" value={form.photo_url} onChange={e=>setForm(p=>({...p,photo_url:e.target.value}))} placeholder="https://..." />
+                  </div>
+                  <div>
+                    <label style={{ display:'block', marginBottom:6, fontWeight:600, fontSize:'0.82rem', color:'var(--text-muted)' }}>Contact Number</label>
+                    <input type="tel" value={form.contact_phone} onChange={e=>setForm(p=>({...p,contact_phone:e.target.value}))} placeholder={user?.phone_number || '0712 345 678'} />
+                  </div>
                   <div style={{ gridColumn:'1/-1' }}>
                     <label style={{ display:'block', marginBottom:6, fontWeight:600, fontSize:'0.82rem', color:'var(--text-muted)' }}>Description</label>
                     <textarea value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} rows={3} required style={{ resize:'vertical' }} />
@@ -196,7 +206,7 @@ const StudentDashboard = () => {
                   <table>
                     <thead>
                       <tr>
-                        {['Title','Price','Category','Campus Zone','Views','Posted',''].map(h=><th key={h}>{h}</th>)}
+                        {['Title','Price','Category','Campus Zone','Contact','Views','Posted',''].map(h=><th key={h}>{h}</th>)}
                       </tr>
                     </thead>
                     <tbody>
@@ -206,6 +216,7 @@ const StudentDashboard = () => {
                           <td style={{ color:'var(--primary)', fontWeight:700 }}>KES {parseFloat(l.price).toLocaleString()}</td>
                           <td>{l.category_name || '—'}</td>
                           <td>{l.campus_zone || '-'}</td>
+                          <td>{l.contact_phone || user?.phone_number || '-'}</td>
                           <td>{l.view_count ?? 0}</td>
                           <td style={{ color:'var(--text-muted)' }}>{new Date(l.created_at).toLocaleDateString()}</td>
                           <td><Button variant="ghost" size="sm" onClick={() => navigate(`/listing/${l.id}`)}>View →</Button></td>

@@ -6,7 +6,7 @@ const env = require('../config/env');
 
 /**
  * Protects routes by verifying the JWT in the Authorization header.
- * Attaches `req.user = { id, email, is_admin }` on success.
+ * Attaches `req.user = { id, email, admissionNumber, is_admin }` on success.
  */
 module.exports = (req, res, next) => {
   try {
@@ -22,6 +22,7 @@ module.exports = (req, res, next) => {
     req.user = {
       id: decoded.userId,
       email: decoded.email,
+      admissionNumber: decoded.admissionNumber,
       is_admin: Boolean(decoded.is_admin),
     };
 

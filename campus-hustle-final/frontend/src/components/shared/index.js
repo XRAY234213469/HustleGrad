@@ -73,9 +73,13 @@ export const GlobalNav = () => {
 
   return (
     <nav className="global-nav">
-      <Link to="/" className="nav-logo">Hustle<span>Grad</span></Link>
+      <Link to="/" className="nav-logo">
+        <img src="/logo.svg" alt="" className="nav-logo-mark" />
+        Hustle<span>Grad</span>
+      </Link>
       <div className="nav-links">
         <Link to="/marketplace" className={`nav-link ${isActive('/marketplace')}`}>Browse</Link>
+        <Link to="/contact" className={`nav-link ${isActive('/contact')}`}>Contact</Link>
         {user ? (
           <>
             <Link

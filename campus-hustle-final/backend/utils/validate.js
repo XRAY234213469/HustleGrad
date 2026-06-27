@@ -1,9 +1,12 @@
 // backend/utils/validate.js
 'use strict';
 
-/** Returns true if email looks like an .edu address. */
-const isEduEmail = (email) =>
-  typeof email === 'string' && /\.edu$/i.test(email.trim());
+/** Returns true if email has a basic valid shape. */
+const isValidEmail = (email) =>
+  typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+const normalizeAdmissionNumber = (admissionNumber) =>
+  String(admissionNumber || '').trim().toUpperCase();
 
 /** Ensure required string fields are present and non-empty. */
 const requireFields = (body, fields) => {
@@ -18,4 +21,4 @@ const requireFields = (body, fields) => {
 /** Strip all whitespace from a string (used for OTP comparison). */
 const stripWhitespace = (str) => String(str).replace(/\s/g, '');
 
-module.exports = { isEduEmail, requireFields, stripWhitespace };
+module.exports = { isValidEmail, normalizeAdmissionNumber, requireFields, stripWhitespace };

@@ -97,9 +97,15 @@ const ServiceDetails = () => {
       <div style={styles.grid}>
         {/* ── Listing info ── */}
         <Card>
+          {listing.photo_url && (
+            <img src={listing.photo_url} alt="" style={styles.listingPhoto} />
+          )}
           <span style={styles.categoryTag}>{listing.category_name}</span>
           <h1 style={styles.title}>{listing.title}</h1>
           <p style={styles.seller}>Offered by <strong>{listing.seller_name}</strong></p>
+          {(listing.contact_phone || listing.seller_phone_number) && (
+            <p style={styles.contact}>Contact: {listing.contact_phone || listing.seller_phone_number}</p>
+          )}
           {listing.campus_zone && <span style={styles.zoneTag}>{listing.campus_zone}</span>}
           <hr style={styles.divider} />
           <p style={styles.desc}>{listing.description}</p>
@@ -215,9 +221,11 @@ const styles = {
   page:        { maxWidth: 900, margin: '0 auto', padding: '24px 16px' },
   grid:        { display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20, alignItems: 'start' },
   categoryTag: { display: 'inline-block', background: '#e0f2fe', color: '#0288d1', borderRadius: 12, padding: '2px 10px', fontSize: '0.75rem', fontWeight: 700, marginBottom: 10 },
+  listingPhoto:{ width: '100%', aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: 8, marginBottom: 16, background: '#f1f5f9' },
   zoneTag:     { display: 'inline-block', background: '#fef3c7', color: '#92400e', borderRadius: 12, padding: '3px 10px', fontSize: '0.75rem', fontWeight: 700, marginBottom: 8 },
   title:       { margin: '8px 0 4px', fontSize: '1.5rem', color: '#1a202c' },
   seller:      { color: '#718096', fontSize: '0.9rem', margin: '0 0 16px' },
+  contact:     { color: '#0f172a', fontSize: '0.9rem', fontWeight: 700, margin: '-8px 0 14px' },
   divider:     { border: 0, borderTop: '1px solid #edf2f7', margin: '16px 0' },
   desc:        { color: '#4a5568', lineHeight: 1.7 },
   priceRow:    { marginTop: 20 },

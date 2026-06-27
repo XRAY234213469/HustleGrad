@@ -12,6 +12,7 @@ router.get('/my/dashboard', authenticate, listings.getDashboardMetrics);
 router.post('/',            authenticate, listings.create);
 
 // Public
+router.get('/top/hustlers', listings.topHustlers);
 router.get('/',        listings.search);
 router.get('/:id',     listings.getById);
 

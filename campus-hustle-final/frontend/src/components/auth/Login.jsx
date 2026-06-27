@@ -11,7 +11,7 @@ const Login = () => {
 
   const [step,    setStep]    = useState('credentials');
   const [userId,  setUserId]  = useState(null);
-  const [form,    setForm]    = useState({ email: '', password: '' });
+  const [form,    setForm]    = useState({ admissionNumber: '', password: '' });
   const [code,    setCode]    = useState('');
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
@@ -60,12 +60,12 @@ const Login = () => {
 
             <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={labelStyle}>Student Email</label>
+                <label style={labelStyle}>Admission Number</label>
                 <input
-                  type="email"
-                  value={form.email}
-                  onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                  placeholder="you@strathmore.edu"
+                  type="text"
+                  value={form.admissionNumber}
+                  onChange={e => setForm(p => ({ ...p, admissionNumber: e.target.value }))}
+                  placeholder="ADM001"
                   required
                   autoFocus
                 />
@@ -105,7 +105,7 @@ const Login = () => {
             <div className="auth-logo">
               <span className="emoji">🔒</span>
               <h2>Verify Identity</h2>
-              <p>Enter the code sent to your email</p>
+              <p>Enter the OTP sent to your linked email</p>
             </div>
             <Alert type="info"  message={info} />
             <Alert type="error" message={error} />

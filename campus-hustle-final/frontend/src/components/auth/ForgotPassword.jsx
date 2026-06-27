@@ -7,8 +7,8 @@ import { Alert, Button } from '../shared';
 const ForgotPassword = () => {
   const navigate = useNavigate();
 
-  const [step,     setStep]     = useState('email');
-  const [email,    setEmail]    = useState('');
+  const [step,     setStep]     = useState('admission');
+  const [admissionNumber, setAdmissionNumber] = useState('');
   const [userId,   setUserId]   = useState(null);
   const [code,     setCode]     = useState('');
   const [password, setPassword] = useState('');
@@ -21,7 +21,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
-      const res = await authApi.forgotPassword(email);
+      const res = await authApi.forgotPassword(admissionNumber);
       setUserId(res.data.userId);
       setInfo(res.data.message);
       setStep('code');
@@ -57,22 +57,22 @@ const ForgotPassword = () => {
     <div className="auth-page">
       <div className="auth-card page-enter">
 
-        {step === 'email' && (
+        {step === 'admission' && (
           <>
             <div className="auth-logo">
               <span className="emoji">🔐</span>
               <h2>Forgot Password?</h2>
-              <p>Enter your student email and we'll send a reset code</p>
+              <p>Enter your admission number and we'll send a reset code to the linked email</p>
             </div>
             <Alert type="error" message={error} />
             <form onSubmit={handleRequestCode} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={labelStyle}>Student Email</label>
+                <label style={labelStyle}>Admission Number</label>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@strathmore.edu"
+                  type="text"
+                  value={admissionNumber}
+                  onChange={e => setAdmissionNumber(e.target.value)}
+                  placeholder="ADM001"
                   required
                   autoFocus
                 />
@@ -139,7 +139,7 @@ const ForgotPassword = () => {
               <Button
                 variant="neutral"
                 className="w-full"
-                onClick={() => { setStep('email'); setError(''); setCode(''); }}
+                onClick={() => { setStep('admission'); setError(''); setCode(''); }}
               >
                 ← Back
               </Button>

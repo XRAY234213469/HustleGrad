@@ -87,12 +87,14 @@ const AdminDashboard = () => {
                 <Card className="reveal">
                   <div className="table-wrapper">
                     <table>
-                      <thead><tr>{['Name','Email','Role','Joined'].map(h=><th key={h}>{h}</th>)}</tr></thead>
+                      <thead><tr>{['Name','Admission','Email','Phone','Role','Joined'].map(h=><th key={h}>{h}</th>)}</tr></thead>
                       <tbody>
                         {users.map(u=>(
                           <tr key={u.id}>
                             <td style={{fontWeight:600}}>{u.name}</td>
+                            <td>{u.admission_number || '-'}</td>
                             <td style={{color:'var(--text-muted)'}}>{u.email}</td>
+                            <td>{u.phone_number || '-'}</td>
                             <td><Badge variant={u.is_admin?'accent':'primary'}>{u.is_admin?'Admin':'Student'}</Badge></td>
                             <td style={{color:'var(--text-muted)'}}>{new Date(u.created_at).toLocaleDateString()}</td>
                           </tr>

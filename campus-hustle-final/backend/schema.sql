@@ -11,8 +11,10 @@ DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
+  admission_number VARCHAR(80) UNIQUE NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL
-    CHECK (email LIKE '%@strathmore.edu' OR email LIKE '%@%.edu'),
+    CHECK (email ~* '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$'),
+  phone_number VARCHAR(30),
   password_hash VARCHAR(255) NOT NULL,
   profile_picture_url TEXT,
   is_verified BOOLEAN DEFAULT FALSE,
@@ -37,11 +39,12 @@ CREATE TABLE listings (
   title VARCHAR(255) NOT NULL,
   description TEXT NOT NULL,
   price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+  photo_url TEXT,
+  contact_phone VARCHAR(30),
   campus_zone VARCHAR(80) NOT NULL CHECK (
     campus_zone IN (
       'Student Centre (STC)',
       'Phase 2',
-      'Phase I',
       'The Library Gates',
       'The Cafeteria/Gazebos'
     )
@@ -79,6 +82,7 @@ CREATE TABLE reviews (
 );
 
 CREATE INDEX idx_users_email ON users (email);
+CREATE INDEX idx_users_admission_number ON users (admission_number);
 CREATE INDEX idx_listings_seller ON listings (seller_id);
 CREATE INDEX idx_listings_category ON listings (category_id);
 CREATE INDEX idx_listings_campus_zone ON listings (campus_zone);
@@ -104,29 +108,29 @@ INSERT INTO categories (name, description) VALUES
 
 -- Password for admin: Password123!
 -- Password for demo users: DemoPass123!
-INSERT INTO users (name, email, password_hash, is_admin, profile_picture_url) VALUES
-  ('Emmanuel Kiprotich', 'emmanuel.kiprotich@strathmore.edu', '$2b$10$XcWWZUMLnX2DrO0A5qy/Le788ZpeFh/g6tfoBR1bgrWS1THKvM4Cy', TRUE, NULL),
-  ('Amina Wanjiku', 'amina.wanjiku@strathmore.edu', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
-  ('Brian Otieno', 'brian.otieno@strathmore.edu', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
-  ('Cynthia Mutua', 'cynthia.mutua@strathmore.edu', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
-  ('David Mwangi', 'david.mwangi@strathmore.edu', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL);
+INSERT INTO users (name, admission_number, email, phone_number, password_hash, is_admin, profile_picture_url) VALUES
+  ('Emmanuel Kiprotich', 'ADM001', 'emmanuel.kiprotich@strathmore.edu', '0712345001', '$2b$10$XcWWZUMLnX2DrO0A5qy/Le788ZpeFh/g6tfoBR1bgrWS1THKvM4Cy', TRUE, NULL),
+  ('Amina Wanjiku', 'ADM002', 'amina.wanjiku@gmail.com', '0712345002', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
+  ('Brian Otieno', 'ADM003', 'brian.otieno@strathmore.edu', '0712345003', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
+  ('Cynthia Mutua', 'ADM004', 'cynthia.mutua@yahoo.com', '0712345004', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
+  ('David Mwangi', 'ADM005', 'david.mwangi@strathmore.edu', '0712345005', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL);
 
-INSERT INTO listings (seller_id, category_id, title, description, price, campus_zone, view_count, created_at) VALUES
-  (2, 7, 'Financial Accounting IFRS Textbook', 'Clean copy with highlighted examples for ACC 101 and practice questions marked by topic.', 1800, 'The Library Gates', 42, NOW() - INTERVAL '5 days'),
-  (2, 3, 'Friday Brownies Box of 6', 'Fresh fudge brownies packed for pickup between classes. Optional caramel drizzle included.', 450, 'The Cafeteria/Gazebos', 76, NOW() - INTERVAL '4 days'),
-  (2, 1, 'Club Event Poster Design', 'Fast Canva and Photoshop posters for society events, sports fixtures, and class campaigns.', 900, 'Student Centre (STC)', 35, NOW() - INTERVAL '3 days'),
-  (3, 2, 'Laptop Windows Cleanup and Antivirus Setup', 'Speed up your laptop, remove bloat, install updates, and configure basic security tools.', 1200, 'Phase 2', 64, NOW() - INTERVAL '2 days'),
-  (3, 8, 'USB-C Charger 65W', 'Compact fast charger, works with most Type-C laptops and phones. Lightly used for one semester.', 2500, 'Phase I', 31, NOW() - INTERVAL '1 day'),
-  (3, 6, 'Java OOP Tutoring Session', 'One-hour peer tutoring for inheritance, interfaces, collections, and exam-style problem solving.', 700, 'The Library Gates', 58, NOW() - INTERVAL '20 hours'),
-  (4, 4, 'Trouser Hemming Same Day', 'Quick alterations for formal trousers, graduation outfits, and thrift finds.', 350, 'Phase I', 23, NOW() - INTERVAL '18 hours'),
-  (4, 5, 'Graduation Portrait Mini Shoot', 'Twenty-minute outdoor session with five edited photos delivered digitally within 48 hours.', 1800, 'Student Centre (STC)', 89, NOW() - INTERVAL '16 hours'),
-  (4, 7, 'Business Law Revision Pack', 'Summarized notes, past-paper themes, and case references for end-sem prep.', 600, 'The Library Gates', 47, NOW() - INTERVAL '13 hours'),
-  (5, 3, 'Chapati Wrap Lunch Pack', 'Chicken or veggie wrap with kachumbari. Pickup near gazebos from noon.', 300, 'The Cafeteria/Gazebos', 112, NOW() - INTERVAL '10 hours'),
-  (5, 8, 'Scientific Calculator FX-991ES', 'Original Casio calculator in good condition, battery working, ideal for stats and finance units.', 1500, 'Phase 2', 51, NOW() - INTERVAL '8 hours'),
-  (5, 1, 'LinkedIn Headline and CV Polish', 'Clean up your LinkedIn profile headline, about section, and one-page CV for attachment applications.', 1000, 'Student Centre (STC)', 66, NOW() - INTERVAL '6 hours'),
-  (2, 6, 'Statistics CAT Prep Group', 'Small-group revision for probability, hypothesis testing, and regression with worked examples.', 500, 'Phase 2', 39, NOW() - INTERVAL '4 hours'),
-  (3, 2, 'Phone Screen Protector Install', 'Tempered glass protector with dust-free installation for common iPhone and Samsung models.', 250, 'The Cafeteria/Gazebos', 28, NOW() - INTERVAL '2 hours'),
-  (4, 4, 'Thrift Denim Jacket', 'Oversized blue denim jacket, excellent condition, fits medium to large.', 1600, 'Phase I', 44, NOW() - INTERVAL '1 hour');
+INSERT INTO listings (seller_id, category_id, title, description, price, photo_url, contact_phone, campus_zone, view_count, created_at) VALUES
+  (2, 7, 'Financial Accounting IFRS Textbook', 'Clean copy with highlighted examples for ACC 101 and practice questions marked by topic.', 1800, NULL, '0712345002', 'The Library Gates', 42, NOW() - INTERVAL '5 days'),
+  (2, 3, 'Friday Brownies Box of 6', 'Fresh fudge brownies packed for pickup between classes. Optional caramel drizzle included.', 450, NULL, '0712345002', 'The Cafeteria/Gazebos', 76, NOW() - INTERVAL '4 days'),
+  (2, 1, 'Club Event Poster Design', 'Fast Canva and Photoshop posters for society events, sports fixtures, and class campaigns.', 900, NULL, '0712345002', 'Student Centre (STC)', 35, NOW() - INTERVAL '3 days'),
+  (3, 2, 'Laptop Windows Cleanup and Antivirus Setup', 'Speed up your laptop, remove bloat, install updates, and configure basic security tools.', 1200, NULL, '0712345003', 'Phase 2', 64, NOW() - INTERVAL '2 days'),
+  (3, 8, 'USB-C Charger 65W', 'Compact fast charger, works with most Type-C laptops and phones. Lightly used for one semester.', 2500, NULL, '0712345003', 'Phase 2', 31, NOW() - INTERVAL '1 day'),
+  (3, 6, 'Java OOP Tutoring Session', 'One-hour peer tutoring for inheritance, interfaces, collections, and exam-style problem solving.', 700, NULL, '0712345003', 'The Library Gates', 58, NOW() - INTERVAL '20 hours'),
+  (4, 4, 'Trouser Hemming Same Day', 'Quick alterations for formal trousers, graduation outfits, and thrift finds.', 350, NULL, '0712345004', 'Student Centre (STC)', 23, NOW() - INTERVAL '18 hours'),
+  (4, 5, 'Graduation Portrait Mini Shoot', 'Twenty-minute outdoor session with five edited photos delivered digitally within 48 hours.', 1800, NULL, '0712345004', 'Student Centre (STC)', 89, NOW() - INTERVAL '16 hours'),
+  (4, 7, 'Business Law Revision Pack', 'Summarized notes, past-paper themes, and case references for end-sem prep.', 600, NULL, '0712345004', 'The Library Gates', 47, NOW() - INTERVAL '13 hours'),
+  (5, 3, 'Chapati Wrap Lunch Pack', 'Chicken or veggie wrap with kachumbari. Pickup near gazebos from noon.', 300, NULL, '0712345005', 'The Cafeteria/Gazebos', 112, NOW() - INTERVAL '10 hours'),
+  (5, 8, 'Scientific Calculator FX-991ES', 'Original Casio calculator in good condition, battery working, ideal for stats and finance units.', 1500, NULL, '0712345005', 'Phase 2', 51, NOW() - INTERVAL '8 hours'),
+  (5, 1, 'LinkedIn Headline and CV Polish', 'Clean up your LinkedIn profile headline, about section, and one-page CV for attachment applications.', 1000, NULL, '0712345005', 'Student Centre (STC)', 66, NOW() - INTERVAL '6 hours'),
+  (2, 6, 'Statistics CAT Prep Group', 'Small-group revision for probability, hypothesis testing, and regression with worked examples.', 500, NULL, '0712345002', 'Phase 2', 39, NOW() - INTERVAL '4 hours'),
+  (3, 2, 'Phone Screen Protector Install', 'Tempered glass protector with dust-free installation for common iPhone and Samsung models.', 250, NULL, '0712345003', 'The Cafeteria/Gazebos', 28, NOW() - INTERVAL '2 hours'),
+  (4, 4, 'Thrift Denim Jacket', 'Oversized blue denim jacket, excellent condition, fits medium to large.', 1600, NULL, '0712345004', 'Student Centre (STC)', 44, NOW() - INTERVAL '1 hour');
 
 INSERT INTO bookings (buyer_id, listing_id, scheduled_date, status, created_at) VALUES
   (3, 1, NOW() + INTERVAL '1 day', 'pending', NOW() - INTERVAL '3 hours'),
@@ -140,11 +144,9 @@ INSERT INTO messages (sender_id, receiver_id, listing_id, content, created_at) V
   (2, 5, 10, 'Please reserve one chicken wrap for lunch.', NOW() - INTERVAL '1 hour'),
   (4, 2, 3, 'Can you make a poster by tomorrow morning?', NOW() - INTERVAL '45 minutes');
 
-
--- 1. Update any existing data so the constraint doesn't fail
-UPDATE listings 
-SET campus_zone = 'Phase 2' 
-WHERE campus_zone = 'Phase 3';
+INSERT INTO reviews (booking_id, reviewer_id, rating, comment, created_at) VALUES
+  (2, 4, 5, 'Fast laptop cleanup and clear updates throughout.', NOW() - INTERVAL '20 hours'),
+  (4, 2, 4, 'Tasty lunch pack and easy pickup near the gazebos.', NOW() - INTERVAL '1 hour');
 
 -- Fast seller Hustle Metrics query used by the dashboard.
 -- Replace :seller_id with a parameter in application code.

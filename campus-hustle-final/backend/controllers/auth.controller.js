@@ -7,29 +7,39 @@ const db     = require('../config/db');
 const env    = require('../config/env');
 const emailService  = require('../services/email.service');
 const { AppError, asyncHandler } = require('../utils/errors');
-const { isEduEmail, requireFields, stripWhitespace } = require('../utils/validate');
+const { isValidEmail, normalizeAdmissionNumber, requireFields, stripWhitespace } = require('../utils/validate');
 
 // ─── Register ────────────────────────────────────────────────────────────────
 
 const register = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, admissionNumber, email, password, phoneNumber } = req.body;
 
-  const missing = requireFields(req.body, ['name', 'email', 'password']);
+  const missing = requireFields(req.body, ['name', 'admissionNumber', 'email', 'password']);
   if (missing) throw new AppError(missing, 400);
 
-  if (!isEduEmail(email)) {
-    throw new AppError('Registration requires an institutional (.edu) email address.', 400);
+  if (!isValidEmail(email)) {
+    throw new AppError('Enter a valid personal or Strathmore email address.', 400);
   }
 
-  const existing = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+  const normalizedAdmissionNumber = normalizeAdmissionNumber(admissionNumber);
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const existingAdmission = await db.query('SELECT id FROM users WHERE admission_number = $1', [normalizedAdmissionNumber]);
+  if (existingAdmission.rows.length > 0) {
+    throw new AppError('An account with this admission number already exists.', 409);
+  }
+
+  const existing = await db.query('SELECT id FROM users WHERE email = $1', [normalizedEmail]);
   if (existing.rows.length > 0) {
     throw new AppError('An account with this email already exists.', 409);
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
   const result = await db.query(
-    'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, name, email, is_admin, profile_picture_url',
-    [name.trim(), email.trim().toLowerCase(), passwordHash]
+    `INSERT INTO users (name, admission_number, email, phone_number, password_hash)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id, name, admission_number, email, phone_number, is_admin, profile_picture_url`,
+    [name.trim(), normalizedAdmissionNumber, normalizedEmail, phoneNumber?.trim() || null, passwordHash]
   );
 
   res.status(201).json({
@@ -42,15 +52,15 @@ const register = asyncHandler(async (req, res) => {
 // ─── Login (step 1 of 2FA) ────────────────────────────────────────────────────
 
 const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { admissionNumber, password } = req.body;
 
-  const missing = requireFields(req.body, ['email', 'password']);
+  const missing = requireFields(req.body, ['admissionNumber', 'password']);
   if (missing) throw new AppError(missing, 400);
 
-  const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+  const result = await db.query('SELECT * FROM users WHERE admission_number = $1', [normalizeAdmissionNumber(admissionNumber)]);
   const user   = result.rows[0];
 
-  const invalidCredMsg = 'Invalid email or password.';
+  const invalidCredMsg = 'Invalid admission number or password.';
   if (!user) throw new AppError(invalidCredMsg, 401);
 
   const passwordMatch = await bcrypt.compare(password, user.password_hash);
@@ -70,7 +80,7 @@ const login = asyncHandler(async (req, res) => {
     success: true,
     requires2FA: true,
     userId: user.id,
-    message: '2FA code sent to your student email. Valid for 5 minutes.',
+    message: 'OTP sent to the email linked to this admission number. Valid for 5 minutes.',
   });
 });
 
@@ -83,7 +93,7 @@ const verify2FA = asyncHandler(async (req, res) => {
   if (missing) throw new AppError(missing, 400);
 
   const result = await db.query(
-    'SELECT id, name, email, is_admin, profile_picture_url, tfa_code, tfa_expires_at FROM users WHERE id = $1',
+    'SELECT id, name, admission_number, email, phone_number, is_admin, profile_picture_url, tfa_code, tfa_expires_at FROM users WHERE id = $1',
     [userId]
   );
   const user = result.rows[0];
@@ -100,7 +110,7 @@ const verify2FA = asyncHandler(async (req, res) => {
   await db.query('UPDATE users SET tfa_code = NULL, tfa_expires_at = NULL WHERE id = $1', [userId]);
 
   const token = jwt.sign(
-    { userId: user.id, email: user.email, is_admin: user.is_admin },
+    { userId: user.id, admissionNumber: user.admission_number, email: user.email, is_admin: user.is_admin },
     env.jwt.secret,
     { expiresIn: env.jwt.expiresIn }
   );
@@ -111,7 +121,9 @@ const verify2FA = asyncHandler(async (req, res) => {
     user: {
       id: user.id,
       name: user.name,
+      admission_number: user.admission_number,
       email: user.email,
+      phone_number: user.phone_number,
       is_admin: user.is_admin,
       profile_picture_url: user.profile_picture_url,
     },
@@ -120,7 +132,7 @@ const verify2FA = asyncHandler(async (req, res) => {
 
 const me = asyncHandler(async (req, res) => {
   const result = await db.query(
-    'SELECT id, name, email, is_admin, profile_picture_url, created_at FROM users WHERE id = $1',
+    'SELECT id, name, admission_number, email, phone_number, is_admin, profile_picture_url, created_at FROM users WHERE id = $1',
     [req.user.id]
   );
 
@@ -132,19 +144,22 @@ const me = asyncHandler(async (req, res) => {
 // ─── Forgot Password — step 1: send OTP ──────────────────────────────────────
 
 const forgotPassword = asyncHandler(async (req, res) => {
-  const { email } = req.body;
+  const { admissionNumber } = req.body;
 
-  const missing = requireFields(req.body, ['email']);
+  const missing = requireFields(req.body, ['admissionNumber']);
   if (missing) throw new AppError(missing, 400);
 
-  const result = await db.query('SELECT id, name FROM users WHERE email = $1', [email.trim().toLowerCase()]);
+  const result = await db.query(
+    'SELECT id, name, email FROM users WHERE admission_number = $1',
+    [normalizeAdmissionNumber(admissionNumber)]
+  );
   const user   = result.rows[0];
 
   // Always return success to prevent email enumeration attacks
   if (!user) {
     return res.status(200).json({
       success: true,
-      message: 'If that email exists, a reset code has been sent.',
+      message: 'If that admission number exists, a reset code has been sent to its linked email.',
     });
   }
 
@@ -156,12 +171,12 @@ const forgotPassword = asyncHandler(async (req, res) => {
     [resetCode, expiresAt, user.id]
   );
 
-  await emailService.sendPasswordResetCode(email, user.name, resetCode);
+  await emailService.sendPasswordResetCode(user.email, user.name, resetCode);
 
   res.status(200).json({
     success: true,
     userId: user.id,
-    message: 'If that email exists, a reset code has been sent.',
+    message: 'If that admission number exists, a reset code has been sent to its linked email.',
   });
 });
 

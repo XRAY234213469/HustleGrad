@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+  <title id="title">HustleGrad logo</title>
+  <desc id="desc">A market stall and graduation cap monogram for Campus Marketplace System.</desc>
+  <defs>
+    <linearGradient id="markGradient" x1="42" y1="34" x2="198" y2="206" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0ea5e9"/>
+      <stop offset="0.5" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="240" height="240" rx="52" fill="#f8fafc"/>
+  <g filter="url(#shadow)">
+    <path d="M54 92c0-12.2 9.8-22 22-22h88c12.2 0 22 9.8 22 22v72c0 12.2-9.8 22-22 22H76c-12.2 0-22-9.8-22-22V92Z" fill="#fff"/>
+    <path d="M68 93c0-5 4-9 9-9h86c5 0 9 4 9 9v22H68V93Z" fill="url(#markGradient)"/>
+    <path d="M68 115h104v13c0 8.8-7.2 16-16 16h-72c-8.8 0-16-7.2-16-16v-13Z" fill="#e0f2fe"/>
+    <path d="M86 143h68v26H86v-26Z" fill="#fff"/>
+    <path d="M92 153h56M92 164h42" stroke="#2563eb" stroke-width="8" stroke-linecap="round"/>
+    <path d="M74 80 120 54l46 26-46 26-46-26Z" fill="#0f172a"/>
+    <path d="M120 106v22" stroke="#f59e0b" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="120" cy="134" r="6" fill="#f59e0b"/>
+  </g>
+</svg>

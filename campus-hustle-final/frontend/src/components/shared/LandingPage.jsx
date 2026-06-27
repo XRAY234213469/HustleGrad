@@ -3,8 +3,8 @@ import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const FEATURES = [
-  { icon: '🎓', title: 'Student-Only Access',    desc: 'Verified .edu emails keep the community trusted and campus-exclusive.' },
-  { icon: '🔒', title: 'Secure 2FA Login',        desc: 'Every session protected by a one-time code sent to your student inbox.' },
+  { icon: '🎓', title: 'Admission-Based Access', desc: 'Admission numbers stay unique while OTPs go to the email each student links.' },
+  { icon: '🔒', title: 'Secure OTP Login',        desc: 'Every session is protected by a one-time code sent to your linked inbox.' },
   { icon: '💬', title: 'Direct Messaging',         desc: 'Coordinate jobs and details with vendors without leaving the platform.' },
   { icon: '⭐', title: 'Peer Reviews',             desc: 'Rate completed services to build reputation and help others decide.' },
   { icon: '📦', title: 'Easy Listings',            desc: 'Post your skill or service in under 60 seconds — no fees, no fuss.' },
@@ -12,7 +12,7 @@ const FEATURES = [
 ];
 
 const HOW_IT_WORKS = [
-  { step: '01', title: 'Create Your Account', desc: 'Register with your Strathmore .edu email. Takes 30 seconds.' },
+  { step: '01', title: 'Create Your Account', desc: 'Register with your admission number and preferred email. Takes 30 seconds.' },
   { step: '02', title: 'Browse or Post',       desc: 'Explore services from fellow students or list your own hustle.' },
   { step: '03', title: 'Book & Chat',          desc: 'Send a booking request and coordinate details via direct messaging.' },
   { step: '04', title: 'Deliver & Review',     desc: 'Complete the service, confirm delivery, and leave a review.' },
@@ -35,9 +35,10 @@ const LandingPage = () => {
 
       {/* ── Nav ── */}
       <nav className="global-nav">
-        <Link to="/" className="nav-logo">Hustle<span>Grad</span></Link>
+        <Link to="/" className="nav-logo"><img src="/logo.svg" alt="" className="nav-logo-mark" />Hustle<span>Grad</span></Link>
         <div className="nav-links">
           <Link to="/marketplace" className="nav-link">Browse</Link>
+          <Link to="/contact" className="nav-link">Contact</Link>
           <Link to="/login"    className="nav-link">Sign In</Link>
           <Link to="/register" className="btn btn-primary btn-sm">Get Started</Link>
         </div>
@@ -199,10 +200,10 @@ const LandingPage = () => {
         fontSize: '0.82rem',
       }}>
         <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center', gap: 24, flexWrap: 'wrap' }}>
-          {['Browse Listings', 'Register', 'Sign In'].map((l) => (
+          {['Browse Listings', 'Register', 'Sign In', 'Contact'].map((l) => (
             <span
               key={l}
-              onClick={() => navigate(l === 'Browse Listings' ? '/marketplace' : l === 'Register' ? '/register' : '/login')}
+              onClick={() => navigate(l === 'Browse Listings' ? '/marketplace' : l === 'Register' ? '/register' : l === 'Contact' ? '/contact' : '/login')}
               style={{ cursor: 'pointer', color: 'rgba(255,255,255,0.5)', transition: 'color 0.2s' }}
               onMouseEnter={e => e.target.style.color = '#fff'}
               onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.5)'}
