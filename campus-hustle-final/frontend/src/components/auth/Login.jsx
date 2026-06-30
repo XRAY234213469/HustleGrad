@@ -65,9 +65,14 @@ const Login = () => {
                   type="text"
                   value={form.admissionNumber}
                   onChange={e => setForm(p => ({ ...p, admissionNumber: e.target.value }))}
-                  placeholder="ADM001"
+                  placeholder="123456"
                   required
                   autoFocus
+                  pattern="\d{6,8}"
+                  minLength={6}
+                  maxLength={8}
+                  inputMode="numeric"
+                  title="Enter the 6 to 8 digit admission number issued by the school."
                 />
               </div>
               <div>

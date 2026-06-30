@@ -7,7 +7,13 @@ const db     = require('../config/db');
 const env    = require('../config/env');
 const emailService  = require('../services/email.service');
 const { AppError, asyncHandler } = require('../utils/errors');
-const { isValidEmail, normalizeAdmissionNumber, requireFields, stripWhitespace } = require('../utils/validate');
+const {
+  isValidAdmissionNumber,
+  isValidEmail,
+  normalizeAdmissionNumber,
+  requireFields,
+  stripWhitespace,
+} = require('../utils/validate');
 
 // ─── Register ────────────────────────────────────────────────────────────────
 
@@ -22,6 +28,10 @@ const register = asyncHandler(async (req, res) => {
   }
 
   const normalizedAdmissionNumber = normalizeAdmissionNumber(admissionNumber);
+  if (!isValidAdmissionNumber(normalizedAdmissionNumber)) {
+    throw new AppError('Admission number must be a 6 to 8 digit number issued by the school.', 400);
+  }
+
   const normalizedEmail = email.trim().toLowerCase();
 
   const existingAdmission = await db.query('SELECT id FROM users WHERE admission_number = $1', [normalizedAdmissionNumber]);
@@ -57,7 +67,12 @@ const login = asyncHandler(async (req, res) => {
   const missing = requireFields(req.body, ['admissionNumber', 'password']);
   if (missing) throw new AppError(missing, 400);
 
-  const result = await db.query('SELECT * FROM users WHERE admission_number = $1', [normalizeAdmissionNumber(admissionNumber)]);
+  const normalizedAdmissionNumber = normalizeAdmissionNumber(admissionNumber);
+  if (!isValidAdmissionNumber(normalizedAdmissionNumber)) {
+    throw new AppError('Admission number must be a 6 to 8 digit number issued by the school.', 400);
+  }
+
+  const result = await db.query('SELECT * FROM users WHERE admission_number = $1', [normalizedAdmissionNumber]);
   const user   = result.rows[0];
 
   const invalidCredMsg = 'Invalid admission number or password.';
@@ -149,9 +164,14 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const missing = requireFields(req.body, ['admissionNumber']);
   if (missing) throw new AppError(missing, 400);
 
+  const normalizedAdmissionNumber = normalizeAdmissionNumber(admissionNumber);
+  if (!isValidAdmissionNumber(normalizedAdmissionNumber)) {
+    throw new AppError('Admission number must be a 6 to 8 digit number issued by the school.', 400);
+  }
+
   const result = await db.query(
     'SELECT id, name, email FROM users WHERE admission_number = $1',
-    [normalizeAdmissionNumber(admissionNumber)]
+    [normalizedAdmissionNumber]
   );
   const user   = result.rows[0];
 

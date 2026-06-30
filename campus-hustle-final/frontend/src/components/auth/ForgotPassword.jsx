@@ -72,9 +72,14 @@ const ForgotPassword = () => {
                   type="text"
                   value={admissionNumber}
                   onChange={e => setAdmissionNumber(e.target.value)}
-                  placeholder="ADM001"
+                  placeholder="123456"
                   required
                   autoFocus
+                  pattern="\d{6,8}"
+                  minLength={6}
+                  maxLength={8}
+                  inputMode="numeric"
+                  title="Enter the 6 to 8 digit admission number issued by the school."
                 />
               </div>
               <Button type="submit" disabled={loading} className="w-full">

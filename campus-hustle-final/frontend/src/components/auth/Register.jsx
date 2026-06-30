@@ -43,7 +43,7 @@ const Register = () => {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {[
             { label: 'Full Name', name: 'name', type: 'text', placeholder: 'Your full name', required: true },
-            { label: 'Admission Number', name: 'admissionNumber', type: 'text', placeholder: 'ADM001', required: true },
+            { label: 'Admission Number', name: 'admissionNumber', type: 'text', placeholder: '123456', required: true },
             { label: 'Email for OTP', name: 'email', type: 'email', placeholder: 'personal@email.com or you@strathmore.edu', required: true },
             { label: 'Contact Number', name: 'phoneNumber', type: 'tel', placeholder: '0712 345 678', required: false },
             { label: 'Password', name: 'password', type: 'password', placeholder: 'Password', required: true },
@@ -52,8 +52,19 @@ const Register = () => {
               <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                 {label}
               </label>
-              <input name={name} type={type} value={form[name]} onChange={handleChange}
-                placeholder={placeholder} required={required} />
+              <input
+                name={name}
+                type={type}
+                value={form[name]}
+                onChange={handleChange}
+                placeholder={placeholder}
+                required={required}
+                pattern={name === 'admissionNumber' ? '\\d{6,8}' : undefined}
+                minLength={name === 'admissionNumber' ? 6 : undefined}
+                maxLength={name === 'admissionNumber' ? 8 : undefined}
+                inputMode={name === 'admissionNumber' ? 'numeric' : undefined}
+                title={name === 'admissionNumber' ? 'Enter the 6 to 8 digit admission number issued by the school.' : undefined}
+              />
             </div>
           ))}
 

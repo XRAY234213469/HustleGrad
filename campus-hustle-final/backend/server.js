@@ -1,4 +1,3 @@
-// backend/server.js
 'use strict';
 
 const express    = require('express');
@@ -21,24 +20,39 @@ const app = express();
 
 // ─── Security & parsing middleware ───────────────────────────────────────────
 app.use(helmet());
+
+// UPDATED CORS CONFIGURATION
+const allowedOrigins = [
+  'https://hustlegrad.vercel.app', // Your production frontend
+  'http://localhost:5173',          // Local development
+  'http://localhost:3000'
+];
+
 app.use(cors({
-  origin: env.cors.allowedOrigins,
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
-app.use(express.json({ limit: '3mb' })); // Allows small profile images while guarding body-size abuse
+
+app.use(express.json({ limit: '3mb' }));
 app.use('/uploads', express.static(path.join(__dirname, env.storage.uploadDir)));
 
 // ─── Rate limiting ────────────────────────────────────────────────────────────
-// Tighter limit on auth endpoints to slow brute-force attempts
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000, 
   max: 20,
   message: { success: false, message: 'Too many requests. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// General API limiter
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -75,4 +89,4 @@ app.listen(env.port, () => {
   console.log(`[SERVER] Running in ${env.nodeEnv} mode on port ${env.port}`);
 });
 
-module.exports = app; // export for testing
+module.exports = app;

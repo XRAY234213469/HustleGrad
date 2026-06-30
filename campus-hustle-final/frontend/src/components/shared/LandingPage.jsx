@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const FEATURES = [
-  { icon: '🎓', title: 'Admission-Based Access', desc: 'Admission numbers stay unique while OTPs go to the email each student links.' },
+  { icon: '🎓', title: 'Admission-Based Access', desc: 'A 6 to 8 digit school-issued admission number stays unique while OTPs go to the linked email.' },
   { icon: '🔒', title: 'Secure OTP Login',        desc: 'Every session is protected by a one-time code sent to your linked inbox.' },
   { icon: '💬', title: 'Direct Messaging',         desc: 'Coordinate jobs and details with vendors without leaving the platform.' },
   { icon: '⭐', title: 'Peer Reviews',             desc: 'Rate completed services to build reputation and help others decide.' },

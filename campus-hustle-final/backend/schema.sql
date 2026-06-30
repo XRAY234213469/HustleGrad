@@ -11,7 +11,8 @@ DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  admission_number VARCHAR(80) UNIQUE NOT NULL,
+  admission_number VARCHAR(8) UNIQUE NOT NULL
+    CHECK (admission_number ~ '^[0-9]{6,8}$'),
   email VARCHAR(255) UNIQUE NOT NULL
     CHECK (email ~* '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$'),
   phone_number VARCHAR(30),
@@ -96,6 +97,11 @@ CREATE INDEX idx_messages_receiver ON messages (receiver_id);
 CREATE INDEX idx_messages_listing ON messages (listing_id);
 CREATE INDEX idx_messages_thread ON messages (listing_id, sender_id, receiver_id);
 
+-- 1. Safely remove all existing data and reset ID counters (1, 2, 3...)
+TRUNCATE TABLE reviews, messages, bookings, listings, categories, users RESTART IDENTITY CASCADE;
+
+-- 2. Now perform your INSERTS (The order is important due to Foreign Keys)
+
 INSERT INTO categories (name, description) VALUES
   ('Graphics & Design', 'Logo designs, posters, flyers, and branding elements'),
   ('Tech & Repairs', 'Laptop troubleshooting, OS installation, and minor electronic repairs'),
@@ -106,30 +112,17 @@ INSERT INTO categories (name, description) VALUES
   ('Textbooks', 'Pre-owned course books, readers, and revision packs'),
   ('Electronics', 'Student-friendly gadgets, accessories, and devices');
 
--- Password for admin: Password123!
--- Password for demo users: DemoPass123!
 INSERT INTO users (name, admission_number, email, phone_number, password_hash, is_admin, profile_picture_url) VALUES
-  ('Emmanuel Kiprotich', 'ADM001', 'emmanuel.kiprotich@strathmore.edu', '0712345001', '$2b$10$XcWWZUMLnX2DrO0A5qy/Le788ZpeFh/g6tfoBR1bgrWS1THKvM4Cy', TRUE, NULL),
-  ('Amina Wanjiku', 'ADM002', 'amina.wanjiku@gmail.com', '0712345002', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
-  ('Brian Otieno', 'ADM003', 'brian.otieno@strathmore.edu', '0712345003', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
-  ('Cynthia Mutua', 'ADM004', 'cynthia.mutua@yahoo.com', '0712345004', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
-  ('David Mwangi', 'ADM005', 'david.mwangi@strathmore.edu', '0712345005', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL);
+  ('Emmanuel Kiprotich', '123456', 'emmanuel.kiprotich@strathmore.edu', '0712345001', '$2b$10$XcWWZUMLnX2DrO0A5qy/Le788ZpeFh/g6tfoBR1bgrWS1THKvM4Cy', TRUE, NULL),
+  ('Amina Wanjiku', '234567', 'amina.wanjiku@gmail.com', '0712345002', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
+  ('Brian Otieno', '345678', 'brian.otieno@strathmore.edu', '0712345003', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
+  ('Cynthia Mutua', '456789', 'cynthia.mutua@yahoo.com', '0712345004', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
+  ('David Mwangi', '567890', 'david.mwangi@strathmore.edu', '0712345005', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL);
 
 INSERT INTO listings (seller_id, category_id, title, description, price, photo_url, contact_phone, campus_zone, view_count, created_at) VALUES
   (2, 7, 'Financial Accounting IFRS Textbook', 'Clean copy with highlighted examples for ACC 101 and practice questions marked by topic.', 1800, NULL, '0712345002', 'The Library Gates', 42, NOW() - INTERVAL '5 days'),
   (2, 3, 'Friday Brownies Box of 6', 'Fresh fudge brownies packed for pickup between classes. Optional caramel drizzle included.', 450, NULL, '0712345002', 'The Cafeteria/Gazebos', 76, NOW() - INTERVAL '4 days'),
-  (2, 1, 'Club Event Poster Design', 'Fast Canva and Photoshop posters for society events, sports fixtures, and class campaigns.', 900, NULL, '0712345002', 'Student Centre (STC)', 35, NOW() - INTERVAL '3 days'),
-  (3, 2, 'Laptop Windows Cleanup and Antivirus Setup', 'Speed up your laptop, remove bloat, install updates, and configure basic security tools.', 1200, NULL, '0712345003', 'Phase 2', 64, NOW() - INTERVAL '2 days'),
-  (3, 8, 'USB-C Charger 65W', 'Compact fast charger, works with most Type-C laptops and phones. Lightly used for one semester.', 2500, NULL, '0712345003', 'Phase 2', 31, NOW() - INTERVAL '1 day'),
-  (3, 6, 'Java OOP Tutoring Session', 'One-hour peer tutoring for inheritance, interfaces, collections, and exam-style problem solving.', 700, NULL, '0712345003', 'The Library Gates', 58, NOW() - INTERVAL '20 hours'),
-  (4, 4, 'Trouser Hemming Same Day', 'Quick alterations for formal trousers, graduation outfits, and thrift finds.', 350, NULL, '0712345004', 'Student Centre (STC)', 23, NOW() - INTERVAL '18 hours'),
-  (4, 5, 'Graduation Portrait Mini Shoot', 'Twenty-minute outdoor session with five edited photos delivered digitally within 48 hours.', 1800, NULL, '0712345004', 'Student Centre (STC)', 89, NOW() - INTERVAL '16 hours'),
-  (4, 7, 'Business Law Revision Pack', 'Summarized notes, past-paper themes, and case references for end-sem prep.', 600, NULL, '0712345004', 'The Library Gates', 47, NOW() - INTERVAL '13 hours'),
-  (5, 3, 'Chapati Wrap Lunch Pack', 'Chicken or veggie wrap with kachumbari. Pickup near gazebos from noon.', 300, NULL, '0712345005', 'The Cafeteria/Gazebos', 112, NOW() - INTERVAL '10 hours'),
-  (5, 8, 'Scientific Calculator FX-991ES', 'Original Casio calculator in good condition, battery working, ideal for stats and finance units.', 1500, NULL, '0712345005', 'Phase 2', 51, NOW() - INTERVAL '8 hours'),
-  (5, 1, 'LinkedIn Headline and CV Polish', 'Clean up your LinkedIn profile headline, about section, and one-page CV for attachment applications.', 1000, NULL, '0712345005', 'Student Centre (STC)', 66, NOW() - INTERVAL '6 hours'),
-  (2, 6, 'Statistics CAT Prep Group', 'Small-group revision for probability, hypothesis testing, and regression with worked examples.', 500, NULL, '0712345002', 'Phase 2', 39, NOW() - INTERVAL '4 hours'),
-  (3, 2, 'Phone Screen Protector Install', 'Tempered glass protector with dust-free installation for common iPhone and Samsung models.', 250, NULL, '0712345003', 'The Cafeteria/Gazebos', 28, NOW() - INTERVAL '2 hours'),
+  -- ... (Keep the rest of your INSERT statements as they are)
   (4, 4, 'Thrift Denim Jacket', 'Oversized blue denim jacket, excellent condition, fits medium to large.', 1600, NULL, '0712345004', 'Student Centre (STC)', 44, NOW() - INTERVAL '1 hour');
 
 INSERT INTO bookings (buyer_id, listing_id, scheduled_date, status, created_at) VALUES
@@ -147,16 +140,3 @@ INSERT INTO messages (sender_id, receiver_id, listing_id, content, created_at) V
 INSERT INTO reviews (booking_id, reviewer_id, rating, comment, created_at) VALUES
   (2, 4, 5, 'Fast laptop cleanup and clear updates throughout.', NOW() - INTERVAL '20 hours'),
   (4, 2, 4, 'Tasty lunch pack and easy pickup near the gazebos.', NOW() - INTERVAL '1 hour');
-
--- Fast seller Hustle Metrics query used by the dashboard.
--- Replace :seller_id with a parameter in application code.
--- SELECT
---   COUNT(DISTINCT l.id) AS listing_count,
---   COALESCE(SUM(l.view_count), 0) AS total_views,
---   COUNT(DISTINCT m.id) AS offers,
---   COUNT(DISTINCT b.id) AS requests,
---   COALESCE(SUM(CASE WHEN b.status = 'completed' THEN l.price END), 0) AS earnings
--- FROM listings l
--- LEFT JOIN messages m ON m.listing_id = l.id AND m.receiver_id = l.seller_id
--- LEFT JOIN bookings b ON b.listing_id = l.id
--- WHERE l.seller_id = :seller_id;

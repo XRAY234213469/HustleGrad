@@ -6,7 +6,10 @@ const isValidEmail = (email) =>
   typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
 const normalizeAdmissionNumber = (admissionNumber) =>
-  String(admissionNumber || '').trim().toUpperCase();
+  String(admissionNumber || '').trim();
+
+const isValidAdmissionNumber = (admissionNumber) =>
+  /^\d{6,8}$/.test(normalizeAdmissionNumber(admissionNumber));
 
 /** Ensure required string fields are present and non-empty. */
 const requireFields = (body, fields) => {
@@ -21,4 +24,10 @@ const requireFields = (body, fields) => {
 /** Strip all whitespace from a string (used for OTP comparison). */
 const stripWhitespace = (str) => String(str).replace(/\s/g, '');
 
-module.exports = { isValidEmail, normalizeAdmissionNumber, requireFields, stripWhitespace };
+module.exports = {
+  isValidAdmissionNumber,
+  isValidEmail,
+  normalizeAdmissionNumber,
+  requireFields,
+  stripWhitespace,
+};

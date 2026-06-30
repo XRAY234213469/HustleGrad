@@ -4,7 +4,7 @@ HustleGrad is a campus student marketplace web application for buying, selling, 
 
 ## Features
 
-- Student registration with unique admission numbers and flexible personal or Strathmore email OTP login
+- Student registration with unique 6 to 8 digit school-issued admission numbers and flexible personal or Strathmore email OTP login
 - Persistent sessions with server-side token revalidation
 - Protected student, admin, messaging, and seller dashboard routes
 - Marketplace search and category filtering
