@@ -6,7 +6,7 @@ const BASE_URL = process.env.REACT_APP_API_URL || 'https://hustlegrad.onrender.c
 
 const client = axios.create({
   baseURL: BASE_URL,
-  timeout: 10_000,
+  timeout: 60_000,
   headers: { 
     'Content-Type': 'application/json' 
   },
