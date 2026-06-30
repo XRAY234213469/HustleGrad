@@ -21,32 +21,38 @@ const app = express();
 // ─── Security & parsing middleware ───────────────────────────────────────────
 app.use(helmet());
 
-// UPDATED CORS CONFIGURATION
+// DEFINING ALLOWED ORIGINS
 const allowedOrigins = [
-  'https://hustlegrad.vercel.app', // Your production frontend
-  'http://localhost:5173',          // Local development
+  'https://hustle-grad.vercel.app', 
+  'https://hustlegrad.vercel.app', // Adding both variants just in case
+  'http://localhost:5173',
   'http://localhost:3000'
 ];
 
-app.use(cors({
+// CORS configuration
+const corsOptions = {
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
-}));
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
+// Explicitly handle preflight OPTIONS requests for all routes
+app.options('*', cors(corsOptions));
 
 app.use(express.json({ limit: '3mb' }));
 app.use('/uploads', express.static(path.join(__dirname, env.storage.uploadDir)));
 
 // ─── Rate limiting ────────────────────────────────────────────────────────────
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
+  windowMs: 15 * 60 * 1000,
   max: 20,
   message: { success: false, message: 'Too many requests. Please try again later.' },
   standardHeaders: true,
