@@ -1,6 +1,6 @@
 # HustleGrad
 
-HustleGrad is a campus student marketplace web application for buying, selling, booking, and messaging around student-run products and services. It is designed for a polished campus demo with localized pickup zones, seller metrics, profile pictures, and a mock M-PESA escrow checkout flow.
+HustleGrad is a campus student marketplace web application for buying, selling, booking, delivery, payment, and messaging around student-run products and services. It is designed for a polished campus demo with localized pickup zones, seller metrics, profile pictures, M-PESA Daraja checkout, and an AI marketplace helper.
 
 ## Features
 
@@ -14,10 +14,13 @@ HustleGrad is a campus student marketplace web application for buying, selling, 
   - The Library Gates
   - The Cafeteria/Gazebos
 - Profile picture upload with public image URL persistence
-- Listing creation and seller dashboard metrics
+- Listing creation with photo URL or file-browse image upload
+- Seller delivery options with delivery fees
+- Seller dashboard metrics and active order completion flow
 - Buyer/seller messaging
-- Booking requests and reviews
-- High-fidelity mock M-PESA STK Push checkout with escrow success screen
+- Booking requests, buyer receipt confirmation, and reviews
+- M-PESA Daraja STK Push checkout with a local demo fallback when credentials are missing
+- Floating AI assistant for buyer, seller, delivery, and payment guidance
 - Admin overview for users and listings
 
 ## Tech Stack
@@ -84,6 +87,19 @@ UPLOAD_DIR=public/uploads
 PROFILE_PICTURE_BUCKET=profile-pictures
 ```
 
+Optional M-PESA Daraja settings:
+
+```env
+MPESA_ENVIRONMENT=sandbox
+MPESA_CONSUMER_KEY=your_daraja_consumer_key
+MPESA_CONSUMER_SECRET=your_daraja_consumer_secret
+MPESA_SHORTCODE=174379
+MPESA_PASSKEY=your_daraja_passkey
+MPESA_CALLBACK_URL=https://your-public-url.example.com/api/payments/mpesa/callback
+```
+
+If these M-PESA values are not present, the app returns a successful demo response instead of sending a real STK Push.
+
 ## Setup
 
 Install backend dependencies:
@@ -128,6 +144,26 @@ Open:
 
 - Frontend: `http://localhost:3000`
 - Backend health check: `http://localhost:5000/health`
+- Presentation guide: `http://localhost:3000/presentation`
+
+## Presentation Runbook
+
+Before presenting:
+
+- Run `npm run db:init` from `backend` if you want a fresh seeded demo database.
+- Start the backend with `npm run dev`.
+- Start the frontend with `npm start`.
+- Sign in with a prepared demo account and keep the email inbox open for OTP.
+- Open `/presentation` and use it as the clickable runbook.
+
+Suggested demo path:
+
+1. Open Marketplace and show category, campus zone, delivery, and listing cards.
+2. Open a listing, choose delivery if available, and start M-PESA checkout.
+3. Create a booking and mark the order received as the buyer.
+4. Open Dashboard and show the vendor marking the received order done.
+5. Create a new listing with Browse photo upload and delivery fee.
+6. Open the AI assistant and ask about delivery or safe buying.
 
 
 ## Build and Verification
@@ -150,7 +186,9 @@ Get-ChildItem -Recurse -Filter *.js -File | Where-Object { $_.FullName -notlike 
 
 - Rotate any local secrets before deploying.
 - Keep `.env` files out of version control.
+- Set `REACT_APP_API_URL` in hosted frontend environments so the React app points at the correct backend.
 - For production storage, replace local profile image storage with Supabase Storage or S3 using the same service boundary.
+- For production M-PESA, add callback handling, transaction persistence, and reconciliation before moving real money.
 - For production auth, prefer short-lived access tokens plus refresh tokens.
 - Add pagination before high-traffic marketplace use.
 - See `ARCHITECTURE.md` for the Clean Architecture diagnosis and refactoring roadmap.

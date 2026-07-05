@@ -11,7 +11,7 @@ const search = asyncHandler(async (req, res) => {
   const { category_id, keyword, campus_zone } = req.query;
 
   let sql = `
-    SELECT l.id, l.title, l.description, l.price, l.photo_url, l.contact_phone, l.campus_zone, l.view_count, l.created_at,
+    SELECT l.id, l.title, l.description, l.price, l.photo_url, l.contact_phone, l.offers_delivery, l.delivery_fee, l.campus_zone, l.view_count, l.created_at,
            c.name AS category_name,
            u.name AS seller_name,
            u.phone_number AS seller_phone_number,
@@ -103,11 +103,12 @@ const getDashboardMetrics = asyncHandler(async (req, res) => {
       [sellerId]
     ),
     db.query(
-      `SELECT b.id, b.status, b.scheduled_date, l.title, u.name AS buyer_name
+      `SELECT b.id, b.status, b.scheduled_date, b.delivery_required, b.delivery_address, b.delivery_notes,
+              l.title, u.name AS buyer_name
        FROM bookings b
        JOIN listings l ON b.listing_id = l.id
        JOIN users    u ON b.buyer_id   = u.id
-       WHERE l.seller_id = $1 AND b.status = 'pending'
+       WHERE l.seller_id = $1 AND b.status IN ('pending', 'confirmed', 'received')
        ORDER BY b.scheduled_date ASC`,
       [sellerId]
     ),
@@ -131,7 +132,17 @@ const getDashboardMetrics = asyncHandler(async (req, res) => {
 // ─── Protected: create listing ───────────────────────────────────────────────
 
 const create = asyncHandler(async (req, res) => {
-  const { title, description, price, category_id, campus_zone, photo_url, contact_phone } = req.body;
+  const {
+    title,
+    description,
+    price,
+    category_id,
+    campus_zone,
+    photo_url,
+    contact_phone,
+    offers_delivery,
+    delivery_fee,
+  } = req.body;
 
   const missing = requireFields(req.body, ['title', 'description', 'price', 'category_id', 'campus_zone']);
   if (missing) throw new AppError(missing, 400);
@@ -141,9 +152,14 @@ const create = asyncHandler(async (req, res) => {
     throw new AppError('Price must be a non-negative number.', 400);
   }
 
+  const parsedDeliveryFee = parseFloat(delivery_fee || 0);
+  if (isNaN(parsedDeliveryFee) || parsedDeliveryFee < 0) {
+    throw new AppError('Delivery fee must be a non-negative number.', 400);
+  }
+
   const result = await db.query(
-    `INSERT INTO listings (seller_id, category_id, title, description, price, photo_url, contact_phone, campus_zone)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+    `INSERT INTO listings (seller_id, category_id, title, description, price, photo_url, contact_phone, offers_delivery, delivery_fee, campus_zone)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
     [
       req.user.id,
       parseInt(category_id, 10),
@@ -152,6 +168,8 @@ const create = asyncHandler(async (req, res) => {
       parsedPrice,
       photo_url?.trim() || null,
       contact_phone?.trim() || null,
+      Boolean(offers_delivery),
+      parsedDeliveryFee,
       campus_zone,
     ]
   );

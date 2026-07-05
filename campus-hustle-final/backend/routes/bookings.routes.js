@@ -12,6 +12,7 @@ router.use(authenticate);
 
 router.post('/',                                bookings.create);
 router.get('/vendor/notifications',             bookings.getVendorNotifications);
+router.patch('/:bookingId/received',            bookings.markReceived);
 router.patch('/:bookingId/complete',            bookings.markComplete);
 router.post('/reviews',                         bookings.submitReview);
 router.get('/:bookingId/reviews',               bookings.getReviews);

@@ -42,6 +42,8 @@ CREATE TABLE listings (
   price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
   photo_url TEXT,
   contact_phone VARCHAR(30),
+  offers_delivery BOOLEAN NOT NULL DEFAULT FALSE,
+  delivery_fee DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (delivery_fee >= 0),
   campus_zone VARCHAR(80) NOT NULL CHECK (
     campus_zone IN (
       'Student Centre (STC)',
@@ -59,8 +61,11 @@ CREATE TABLE bookings (
   buyer_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   listing_id INT NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
   scheduled_date TIMESTAMPTZ NOT NULL,
+  delivery_required BOOLEAN NOT NULL DEFAULT FALSE,
+  delivery_address TEXT,
+  delivery_notes TEXT,
   status VARCHAR(20) DEFAULT 'pending'
-    CHECK (status IN ('pending','confirmed','completed','cancelled')),
+    CHECK (status IN ('pending','confirmed','received','completed','cancelled')),
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -119,11 +124,11 @@ INSERT INTO users (name, admission_number, email, phone_number, password_hash, i
   ('Cynthia Mutua', '456789', 'cynthia.mutua@yahoo.com', '0712345004', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL),
   ('David Mwangi', '567890', 'david.mwangi@strathmore.edu', '0712345005', '$2b$10$rSyfu9BlfSiITRtXtrnaGeKEuLlOXWJ8W9GEQJaUutH1tmZXwFh4G', FALSE, NULL);
 
-INSERT INTO listings (seller_id, category_id, title, description, price, photo_url, contact_phone, campus_zone, view_count, created_at) VALUES
-  (2, 7, 'Financial Accounting IFRS Textbook', 'Clean copy with highlighted examples for ACC 101 and practice questions marked by topic.', 1800, NULL, '0712345002', 'The Library Gates', 42, NOW() - INTERVAL '5 days'),
-  (2, 3, 'Friday Brownies Box of 6', 'Fresh fudge brownies packed for pickup between classes. Optional caramel drizzle included.', 450, NULL, '0712345002', 'The Cafeteria/Gazebos', 76, NOW() - INTERVAL '4 days'),
+INSERT INTO listings (seller_id, category_id, title, description, price, photo_url, contact_phone, offers_delivery, delivery_fee, campus_zone, view_count, created_at) VALUES
+  (2, 7, 'Financial Accounting IFRS Textbook', 'Clean copy with highlighted examples for ACC 101 and practice questions marked by topic.', 1800, NULL, '0712345002', FALSE, 0, 'The Library Gates', 42, NOW() - INTERVAL '5 days'),
+  (2, 3, 'Friday Brownies Box of 6', 'Fresh fudge brownies packed for pickup between classes. Optional caramel drizzle included.', 450, NULL, '0712345002', TRUE, 80, 'The Cafeteria/Gazebos', 76, NOW() - INTERVAL '4 days'),
   -- ... (Keep the rest of your INSERT statements as they are)
-  (4, 4, 'Thrift Denim Jacket', 'Oversized blue denim jacket, excellent condition, fits medium to large.', 1600, NULL, '0712345004', 'Student Centre (STC)', 44, NOW() - INTERVAL '1 hour');
+  (4, 4, 'Thrift Denim Jacket', 'Oversized blue denim jacket, excellent condition, fits medium to large.', 1600, NULL, '0712345004', TRUE, 120, 'Student Centre (STC)', 44, NOW() - INTERVAL '1 hour');
 
 INSERT INTO bookings (buyer_id, listing_id, scheduled_date, status, created_at) VALUES
   (3, 1, NOW() + INTERVAL '1 day', 'pending', NOW() - INTERVAL '3 hours'),

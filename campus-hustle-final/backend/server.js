@@ -15,6 +15,7 @@ const bookingsRoutes = require('./routes/bookings.routes');
 const messagesRoutes = require('./routes/messages.routes');
 const adminRoutes    = require('./routes/admin.routes');
 const profilesRoutes = require('./routes/profiles.routes');
+const paymentsRoutes = require('./routes/payments.routes');
 
 const app = express();
 
@@ -26,7 +27,16 @@ const allowedOrigins = [
   'https://hustle-grad.vercel.app', 
   'https://hustlegrad.vercel.app', // Adding both variants just in case
   'http://localhost:5173',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:3003',
+  'http://localhost:3004',
+  'http://localhost:3005',
+  'http://localhost:3006',
+  'http://localhost:3007',
+  'http://localhost:3008',
+  'http://localhost:3009'
 ];
 
 // CORS configuration
@@ -38,7 +48,7 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
 };
@@ -76,6 +86,7 @@ app.use('/api/bookings', bookingsRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/admin',    adminRoutes);
 app.use('/api/profiles', profilesRoutes);
+app.use('/api/payments', paymentsRoutes);
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) =>

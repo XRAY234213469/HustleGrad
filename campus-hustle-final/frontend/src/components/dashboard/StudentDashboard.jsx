@@ -1,7 +1,7 @@
 // frontend/src/components/dashboard/StudentDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { listingsApi, profilesApi } from '../../api';
+import { bookingsApi, listingsApi, profilesApi } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { GlobalNav, Spinner, Alert, Card, Button, EmptyState, Badge } from '../shared';
 
@@ -12,10 +12,13 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm]       = useState({ title:'', description:'', price:'', category_id:'', campus_zone:'', photo_url:'', contact_phone:'' });
+  const emptyListingForm = { title:'', description:'', price:'', category_id:'', campus_zone:'', photo_url:'', contact_phone:'', offers_delivery:false, delivery_fee:'' };
+  const [form, setForm]       = useState(emptyListingForm);
   const [formBusy, setFormBusy] = useState(false);
   const [formMsg, setFormMsg]  = useState('');
   const [formErr, setFormErr]  = useState('');
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [orderBusyId, setOrderBusyId] = useState(null);
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadMsg, setUploadMsg] = useState('');
   const [uploadErr, setUploadErr] = useState('');
@@ -43,11 +46,48 @@ const StudentDashboard = () => {
     try {
       await listingsApi.create(form);
       setFormMsg('Listing published!');
-      setForm({ title:'', description:'', price:'', category_id:'', campus_zone:'', photo_url:'', contact_phone:'' });
+      setForm(emptyListingForm);
       load();
       setTimeout(() => setShowForm(false), 1500);
     } catch (err) { setFormErr(err.message); }
     finally { setFormBusy(false); }
+  };
+
+  const handleListingPhoto = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setPhotoBusy(true); setFormErr('');
+    try {
+      if (!file.type.startsWith('image/')) throw new Error('Choose an image file.');
+      if (file.size > 2 * 1024 * 1024) throw new Error('Listing photo must be smaller than 2MB.');
+
+      const imageDataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Could not read that image.'));
+        reader.readAsDataURL(file);
+      });
+
+      setForm((prev) => ({ ...prev, photo_url: imageDataUrl }));
+    } catch (err) {
+      setFormErr(err.message);
+    } finally {
+      setPhotoBusy(false);
+      event.target.value = '';
+    }
+  };
+
+  const handleMarkDone = async (bookingId) => {
+    setOrderBusyId(bookingId); setError('');
+    try {
+      await bookingsApi.markComplete(bookingId);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setOrderBusyId(null);
+    }
   };
 
   const handleProfilePicture = async (event) => {
@@ -178,14 +218,36 @@ const StudentDashboard = () => {
                       {campusZones.map(zone => <option key={zone} value={zone}>{zone}</option>)}
                     </select>
                   </div>
-                  <div>
+                  <div style={{ gridColumn:'1/-1' }}>
                     <label style={{ display:'block', marginBottom:6, fontWeight:600, fontSize:'0.82rem', color:'var(--text-muted)' }}>Listing Photo URL</label>
-                    <input type="url" value={form.photo_url} onChange={e=>setForm(p=>({...p,photo_url:e.target.value}))} placeholder="https://..." />
+                    <div className="listing-photo-input-row">
+                      <input type="url" value={form.photo_url.startsWith('data:') ? '' : form.photo_url} onChange={e=>setForm(p=>({...p,photo_url:e.target.value}))} placeholder="https://..." />
+                      <label className="btn btn-neutral" style={{ cursor: photoBusy ? 'not-allowed' : 'pointer' }}>
+                        {photoBusy ? 'Reading...' : 'Browse'}
+                        <input type="file" accept="image/png,image/jpeg,image/webp" onChange={handleListingPhoto} disabled={photoBusy} className="sr-only" />
+                      </label>
+                    </div>
+                    {form.photo_url && (
+                      <img src={form.photo_url} alt="" className="listing-photo-preview" />
+                    )}
                   </div>
                   <div>
                     <label style={{ display:'block', marginBottom:6, fontWeight:600, fontSize:'0.82rem', color:'var(--text-muted)' }}>Contact Number</label>
                     <input type="tel" value={form.contact_phone} onChange={e=>setForm(p=>({...p,contact_phone:e.target.value}))} placeholder={user?.phone_number || '0712 345 678'} />
                   </div>
+                  <div>
+                    <label style={{ display:'block', marginBottom:6, fontWeight:600, fontSize:'0.82rem', color:'var(--text-muted)' }}>Delivery</label>
+                    <label className="checkbox-row">
+                      <input type="checkbox" checked={form.offers_delivery} onChange={e=>setForm(p=>({...p,offers_delivery:e.target.checked}))} />
+                      I offer delivery
+                    </label>
+                  </div>
+                  {form.offers_delivery && (
+                    <div>
+                      <label style={{ display:'block', marginBottom:6, fontWeight:600, fontSize:'0.82rem', color:'var(--text-muted)' }}>Delivery Fee (KES)</label>
+                      <input type="number" min="0" step="0.01" value={form.delivery_fee} onChange={e=>setForm(p=>({...p,delivery_fee:e.target.value}))} placeholder="0.00" />
+                    </div>
+                  )}
                   <div style={{ gridColumn:'1/-1' }}>
                     <label style={{ display:'block', marginBottom:6, fontWeight:600, fontSize:'0.82rem', color:'var(--text-muted)' }}>Description</label>
                     <textarea value={form.description} onChange={e=>setForm(p=>({...p,description:e.target.value}))} rows={3} required style={{ resize:'vertical' }} />
@@ -211,7 +273,7 @@ const StudentDashboard = () => {
                     </thead>
                     <tbody>
                       {data.listings.map(l=>(
-                        <tr key={l.id}>
+                      <tr key={l.id}>
                           <td style={{ fontWeight:600 }}>{l.title}</td>
                           <td style={{ color:'var(--primary)', fontWeight:700 }}>KES {parseFloat(l.price).toLocaleString()}</td>
                           <td>{l.category_name || '—'}</td>
@@ -231,7 +293,7 @@ const StudentDashboard = () => {
             {/* Pending orders */}
             {data?.activeOrders?.length > 0 && (
               <>
-                <h3 className="reveal" style={{ marginTop:32, marginBottom:16 }}>📋 Pending Orders</h3>
+                <h3 className="reveal" style={{ marginTop:32, marginBottom:16 }}>📋 Active Orders</h3>
                 <div className="stats-grid">
                   {data.activeOrders.map(o=>(
                     <Card key={o.id} className="reveal">
@@ -239,7 +301,20 @@ const StudentDashboard = () => {
                       <div style={{ fontSize:'0.82rem', color:'var(--text-muted)', marginBottom:10 }}>
                         👤 {o.buyer_name} · 📅 {new Date(o.scheduled_date).toLocaleDateString()}
                       </div>
+                      {o.delivery_required && (
+                        <div style={{ fontSize:'0.82rem', color:'var(--text-base)', marginBottom:10 }}>
+                          Delivery: {o.delivery_address}
+                        </div>
+                      )}
                       <Badge variant="accent">{o.status}</Badge>
+                      <Button
+                        size="sm"
+                        onClick={() => handleMarkDone(o.id)}
+                        disabled={orderBusyId === o.id || o.status !== 'received'}
+                        style={{ width:'100%', marginTop:12 }}
+                      >
+                        {orderBusyId === o.id ? 'Updating...' : o.status === 'received' ? 'Mark Done' : 'Waiting for Buyer'}
+                      </Button>
                     </Card>
                   ))}
                 </div>

@@ -26,9 +26,14 @@ export const listingsApi = {
 export const bookingsApi = {
   create:                 (data)      => client.post('/bookings', data),
   getVendorNotifications: ()          => client.get('/bookings/vendor/notifications'),
+  markReceived:           (bookingId) => client.patch(`/bookings/${bookingId}/received`),
   markComplete:           (bookingId) => client.patch(`/bookings/${bookingId}/complete`),
   submitReview:           (data)      => client.post('/bookings/reviews', data),
   getReviews:             (bookingId) => client.get(`/bookings/${bookingId}/reviews`),
+};
+
+export const paymentsApi = {
+  initiateMpesa: (data) => client.post('/payments/mpesa/stk-push', data),
 };
 
 export const messagesApi = {

@@ -14,6 +14,8 @@ import StudentDashboard   from './components/dashboard/StudentDashboard';
 import AdminDashboard     from './components/admin/AdminDashboard';
 import MessagingInterface from './components/messaging/MessagingInterface';
 import ContactUs          from './components/shared/ContactUs';
+import AiAssistant        from './components/shared/AiAssistant';
+import PresentationGuide  from './components/shared/PresentationGuide';
 
 const App = () => (
   <AuthProvider>
@@ -24,6 +26,7 @@ const App = () => (
         <Route path="/login"           element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/contact"         element={<ContactUs />} />
+        <Route path="/presentation"    element={<PresentationGuide />} />
         <Route path="/marketplace"     element={<MarketplaceHome />} />
         <Route path="/listing/:id"     element={<ServiceDetails />} />
 
@@ -39,6 +42,7 @@ const App = () => (
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <AiAssistant />
     </BrowserRouter>
   </AuthProvider>
 );

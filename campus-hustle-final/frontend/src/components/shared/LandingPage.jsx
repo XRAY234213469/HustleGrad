@@ -5,17 +5,18 @@ import { useNavigate, Link } from 'react-router-dom';
 const FEATURES = [
   { icon: '🎓', title: 'Admission-Based Access', desc: 'A 6 to 8 digit school-issued admission number stays unique while OTPs go to the linked email.' },
   { icon: '🔒', title: 'Secure OTP Login',        desc: 'Every session is protected by a one-time code sent to your linked inbox.' },
-  { icon: '💬', title: 'Direct Messaging',         desc: 'Coordinate jobs and details with vendors without leaving the platform.' },
+  { icon: '💬', title: 'Direct Messaging',         desc: 'Coordinate jobs, pickup, delivery, and payment details without leaving the platform.' },
   { icon: '⭐', title: 'Peer Reviews',             desc: 'Rate completed services to build reputation and help others decide.' },
-  { icon: '📦', title: 'Easy Listings',            desc: 'Post your skill or service in under 60 seconds — no fees, no fuss.' },
-  { icon: '📅', title: 'Booking Requests',         desc: 'Schedule services, track orders, and confirm delivery from your dashboard.' },
+  { icon: '📦', title: 'Photo-Ready Listings',     desc: 'Post with a URL or browse from files, then add delivery availability and fees.' },
+  { icon: '📱', title: 'M-PESA Checkout',          desc: 'Start a Daraja STK Push flow and keep the purchase journey familiar for Kenyan students.' },
+  { icon: '✨', title: 'AI Marketplace Helper',    desc: 'Ask for help with safer buying, delivery, payments, and stronger listing copy.' },
 ];
 
 const HOW_IT_WORKS = [
   { step: '01', title: 'Create Your Account', desc: 'Register with your admission number and preferred email. Takes 30 seconds.' },
   { step: '02', title: 'Browse or Post',       desc: 'Explore services from fellow students or list your own hustle.' },
-  { step: '03', title: 'Book & Chat',          desc: 'Send a booking request and coordinate details via direct messaging.' },
-  { step: '04', title: 'Deliver & Review',     desc: 'Complete the service, confirm delivery, and leave a review.' },
+  { step: '03', title: 'Pay & Deliver',        desc: 'Use M-PESA checkout, request delivery when available, and coordinate details.' },
+  { step: '04', title: 'Receive & Finish',     desc: 'Buyer confirms receipt, vendor marks the order done, and reviews build trust.' },
 ];
 
 const LandingPage = () => {
@@ -38,6 +39,7 @@ const LandingPage = () => {
         <Link to="/" className="nav-logo"><img src="/logo.svg" alt="" className="nav-logo-mark" />Hustle<span>Grad</span></Link>
         <div className="nav-links">
           <Link to="/marketplace" className="nav-link">Browse</Link>
+          <Link to="/presentation" className="nav-link">Demo</Link>
           <Link to="/contact" className="nav-link">Contact</Link>
           <Link to="/login"    className="nav-link">Sign In</Link>
           <Link to="/register" className="btn btn-primary btn-sm">Get Started</Link>
@@ -61,8 +63,8 @@ const LandingPage = () => {
           </h1>
 
           <p className="hero-sub reveal">
-            The peer-to-peer marketplace where students buy, sell, and book
-            campus services — safely, instantly, and for free.
+            The peer-to-peer marketplace where students buy, sell, book,
+            deliver, and pay for campus services with confidence.
           </p>
 
           <div className="hero-cta reveal">
@@ -83,7 +85,7 @@ const LandingPage = () => {
               { num: '500+', lbl: 'Students Registered' },
               { num: '120+', lbl: 'Active Listings' },
               { num: '98%',  lbl: 'Satisfaction Rate' },
-              { num: 'Free', lbl: 'Always' },
+              { num: 'M-PESA', lbl: 'Checkout Ready' },
             ].map(({ num, lbl }) => (
               <div key={lbl} className="hero-stat-item">
                 <span className="hero-stat-num">{num}</span>
@@ -108,7 +110,8 @@ const LandingPage = () => {
               Everything you need in one place
             </h2>
             <p style={{ color: 'var(--text-muted)', maxWidth: 480, margin: '0 auto' }}>
-              Built specifically for the Strathmore community. No middlemen, no fees.
+              Built specifically for the Strathmore community, with delivery,
+              M-PESA checkout, vendor dashboards, and AI guidance.
             </p>
           </div>
 

@@ -40,6 +40,9 @@ const ListingCard = ({ listing, onClick }) => (
       <div className="listing-contact">Call: {listing.contact_phone || listing.seller_phone_number}</div>
     )}
     {listing.campus_zone && <div className="campus-zone-tag">{listing.campus_zone}</div>}
+    {listing.offers_delivery && (
+      <div className="delivery-tag">Delivery KES {Number(listing.delivery_fee || 0).toLocaleString()}</div>
+    )}
   </button>
 );
 
